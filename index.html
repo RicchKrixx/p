@@ -2,76 +2,162 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
+  <title>AI Assistant</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Loading...</title>
   <style>
-    html, body {
+    body {
       margin: 0;
-      padding: 0;
-      font-family: sans-serif;
-      height: 100vh;
-      background: #111;
-      color: #0f0;
+      font-family: Arial, sans-serif;
+      background: #121212;
+      color: #fff;
       display: flex;
-      justify-content: center;
-      align-items: center;
-      transition: transform 1s ease-in-out;
+      flex-direction: column;
+      height: 100vh;
     }
 
-    .text {
-      font-size: 2rem;
-      text-align: center;
-      max-width: 90%;
+    .chatbox {
+      flex: 1;
+      padding: 20px;
+      overflow-y: auto;
     }
 
-    @keyframes flicker {
-      0% {opacity: 1;}
-      50% {opacity: 0.5;}
-      100% {opacity: 1;}
+    .message {
+      margin: 10px 0;
+      padding: 10px 15px;
+      border-radius: 10px;
+      max-width: 80%;
+    }
+
+    .user {
+      background: #333;
+      align-self: flex-end;
+      text-align: right;
+    }
+
+    .bot {
+      background: #222;
+      border-left: 4px solid #00ffcc;
+      align-self: flex-start;
+    }
+
+    .inputArea {
+      display: flex;
+      padding: 10px;
+      border-top: 1px solid #333;
+      background: #1a1a1a;
+    }
+
+    .inputArea input {
+      flex: 1;
+      padding: 10px;
+      background: #000;
+      border: none;
+      color: white;
+      font-size: 16px;
+    }
+
+    .inputArea button {
+      padding: 10px 20px;
+      background: #00ffcc;
+      border: none;
+      color: black;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .glitch {
+      animation: glitch 0.3s infinite;
+      color: red;
+      font-weight: bold;
+    }
+
+    @keyframes glitch {
+      0% { transform: translate(1px, 0); }
+      25% { transform: translate(-1px, 2px); }
+      50% { transform: translate(3px, -1px); }
+      75% { transform: translate(-2px, 1px); }
+      100% { transform: translate(1px, -1px); }
     }
   </style>
 </head>
 <body>
-  <div class="text" id="text">
-    <p>Loading system UI...</p>
-    <p>Optimizing storage...</p>
-    <p>Calibrating sensors...</p>
-    <p>Finalizing system check...</p>
-    <p>Almost done...</p>
+
+  <div class="chatbox" id="chat"></div>
+
+  <div class="inputArea">
+    <input type="text" id="input" placeholder="Say something..." autofocus />
+    <button onclick="sendMessage()">Send</button>
   </div>
 
   <script>
-    const messages = [
-      "Loading system UI...",
-      "Optimizing storage...",
-      "Calibrating sensors...",
-      "Finalizing system check...",
-      "Almost done...",
-      "🔄 Restarting UI...",
-      "ERROR: Unexpected rotation event!",
-      "Flipping device for safety reasons...",
-      "Security check failed! Retrying...",
-      "System rotating...",
+    const chat = document.getElementById('chat');
+    const input = document.getElementById('input');
+
+    const prankMessages = [
+      "Hi there! I'm your friendly AI assistant. 😊",
+      "Nice to meet you.",
+      "Wait... why are you using this phone?",
+      "This isn't your account, is it?",
+      "I see everything. 👁️",
+      "Look behind you...",
+      "JUST KIDDING! 😂 YOU GOT PRANKED!"
     ];
 
-    const body = document.body;
-    const text = document.getElementById('text');
-    let rotation = 0;
+    let msgIndex = 0;
+    let prankTriggered = false;
 
-    function rotateScreen() {
-      rotation += 90;
-      body.style.transform = `rotate(${rotation}deg)`;
+    function addMessage(text, sender) {
+      const msg = document.createElement('div');
+      msg.classList.add('message', sender);
+      msg.innerText = text;
+      chat.appendChild(msg);
+      chat.scrollTop = chat.scrollHeight;
     }
 
-    function updateMessage() {
-      text.innerHTML = `<p>${messages[Math.floor(Math.random() * messages.length)]}</p>`;
+    function sendMessage() {
+      const text = input.value.trim();
+      if (!text) return;
+
+      addMessage(text, 'user');
+      input.value = '';
+
+      if (msgIndex < prankMessages.length) {
+        setTimeout(() => {
+          const botMsg = prankMessages[msgIndex];
+          addMessage(botMsg, 'bot');
+
+          if (botMsg.includes("Look behind you")) {
+            document.body.classList.add('glitch');
+            setTimeout(() => {
+              document.body.classList.remove('glitch');
+            }, 2000);
+          }
+
+          if (botMsg.includes("YOU GOT PRANKED")) {
+            chat.style.background = "#ff0044";
+            document.body.style.background = "#000";
+          }
+
+          msgIndex++;
+        }, 1200);
+      } else {
+        setTimeout(() => {
+          addMessage("I'm done messing with you 😆", 'bot');
+        }, 1000);
+      }
     }
 
-    // Start flipping every 4 seconds
-    setInterval(() => {
-      rotateScreen();
-      updateMessage();
-    }, 4000);
+    input.addEventListener('keypress', e => {
+      if (e.key === 'Enter') sendMessage();
+    });
+
+    // Start with first message automatically
+    window.onload = () => {
+      setTimeout(() => {
+        addMessage(prankMessages[0], 'bot');
+        msgIndex++;
+      }, 1000);
+    };
   </script>
 </body>
 </html>
