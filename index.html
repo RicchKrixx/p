@@ -1,163 +1,190 @@
-<!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8" />
-  <title>AI Assistant</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <style>
+
+<link rel="stylesheet" href="file:///C:/Users/PC/Documents/drill.css">
+
+ <style>
+      #blur {
+        font-size:25px;
+        color: white;
+        text-shadow: 0 0 5px #000;
+      }
+    </style>
+
+
+
+
+<style>
+a {
+text-decoration: none;
+}
+</style>
+
+
+ <style>
     body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background: #121212;
-      color: #fff;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    
       display: flex;
       flex-direction: column;
-      height: 100vh;
+      align-items: center;
+      padding: 2rem;
+      overflow-x: hidden;
     }
-
-    .chatbox {
-      flex: 1;
-      padding: 20px;
-      overflow-y: auto;
-    }
-
-    .message {
-      margin: 10px 0;
-      padding: 10px 15px;
-      border-radius: 10px;
-      max-width: 80%;
-    }
-
-    .user {
-      background: #333;
-      align-self: flex-end;
-      text-align: right;
-    }
-
-    .bot {
-      background: #222;
-      border-left: 4px solid #00ffcc;
-      align-self: flex-start;
-    }
-
-    .inputArea {
+ 
+     .wave {
       display: flex;
-      padding: 10px;
-      border-top: 1px solid #333;
-      background: #1a1a1a;
+      justify-content: center;
+      margin: 2rem 0;
     }
-
-    .inputArea input {
-      flex: 1;
-      padding: 10px;
-      background: #000;
-      border: none;
-      color: white;
-      font-size: 16px;
+    
+    .wave-dot {
+      width: 12px;
+      height: 12px;
+      margin: 0 5px;
+      border-radius: 100%;
+      background-color: #ff6b6b;
+      animation: wave 1.5s ease-in-out infinite;
     }
-
-    .inputArea button {
-      padding: 10px 20px;
-      background: #00ffcc;
-      border: none;
-      color: black;
+    
+    .wave-dot:nth-child(2) {
+      animation-delay: 0.2s;
+      background-color: #ff9a8b;
+    }
+    
+    .wave-dot:nth-child(3) {
+      animation-delay: 0.4s;
+      background-color: #ffd8be;
+    }
+    
+    .wave-dot:nth-child(4) {
+      animation-delay: 0.6s;
+      background-color: #91a7ff;
+    }
+    
+    .wave-dot:nth-child(5) {
+      animation-delay: 0.8s;
+      background-color: #6b47ff;
+    }
+    
+    @keyframes wave {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-20px); }
+    }
+    
+    .parallax-container {
+      position: relative;
+      width: 100%;
+      height: 200px;
+      overflow: hidden;
+      margin: 2rem 0;
+      border-radius: 12px;
+    }
+    
+    .parallax-layer {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      transition: transform 0.3s ease-out;
+    }
+    
+    .layer-1 {
+      background: linear-gradient(135deg, #6b47ff 0%, #ff6b6b 100%);
+    }
+    
+    .layer-2 {
+      background: radial-gradient(circle at 30% 50%, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0) 70%);
+    }
+    
+    .layer-3 {
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+    }
+    
+    .circle {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background-color: rgba(255, 255, 255, 0.3);
+    }
+    
+    #counter {
+      font-size: 5rem;
       font-weight: bold;
-      cursor: pointer;
+      color: #333;
+      margin: 2rem 0;
+      transition: transform 0.5s;
     }
-
-    .glitch {
-      animation: glitch 0.3s infinite;
-      color: red;
-      font-weight: bold;
+    
+    #counter:hover {
+      transform: scale(1.2) rotate(5deg);
     }
-
-    @keyframes glitch {
-      0% { transform: translate(1px, 0); }
-      25% { transform: translate(-1px, 2px); }
-      50% { transform: translate(3px, -1px); }
-      75% { transform: translate(-2px, 1px); }
-      100% { transform: translate(1px, -1px); }
+    
+    .typing-text {
+      font-size: 1.5rem;
+      border-right: 3px solid #333;
+      width: 0;
+      white-space: nowrap;
+      overflow: hidden;
+      animation: typing 3s steps(30) forwards, blink 1s infinite;
+      margin: 2rem 0;
+    }
+    
+    @keyframes typing {
+      to { width: 100%; }
+    }
+    
+    @keyframes blink {
+      0%, 100% { border-color: transparent; }
+      50% { border-color: #333; }
     }
   </style>
-</head>
+
+
+
 <body>
 
-  <div class="chatbox" id="chat"></div>
+<form class="container">
+<h1><div id="blur" align="center" class="login-title">Login</div></h1>
+<section class="input-box">
+<input type="text" name="username" placeholder="&#128100username">
+<i class="bx bxs-user"></i>
+</section>
+<section class="input-box">
+<input type="password" name="password" placeholder="&#128274password" id="pwd">
+<i class="bx bxs-lock-alt"></i>
+<span class="toggle-password" onclick="togglepasswordvisibility()">
+<input type="checkbox" onclick="pwd.type = this.checked ? 'text' : 'password'">
+</span>
+</section>
+<section class="remember-forgot-box">
+<div class="remember-me">
+<input type="checkbox" name="remember-me" id="remember-me">
+<label for="remember-me">
+<h5>Remember me</h5>
+</label>
+</div>
+<a class="forgot-password" href="file:///C:/Users/PC/Documents/drill1.html?email=foodbytrechville%40gmail.com" style="text-decoration">
+<h5>Forget password?</h5>
+</a>
+</section>
+<button class="login-button" type="submit"  <meta charset="UTF-8">
 
-  <div class="inputArea">
-    <input type="text" id="input" placeholder="Say something..." autofocus />
-    <button onclick="sendMessage()">Send</button>
-  </div>
+Login
+</button>
+ 
+<h5 class="dont-have-an-account">
+Don't have an account?
+<a href="file:///C:/Users/PC/Documents/new%201.html" style="text-decoration"><b>Register</b></a>
+</h5>
 
-  <script>
-    const chat = document.getElementById('chat');
-    const input = document.getElementById('input');
 
-    const prankMessages = [
-      "Hi there! I'm your friendly AI assistant. 😊",
-      "Nice to meet you.",
-      "Wait... why are you using this phone?",
-      "This isn't your account, is it?",
-      "I see everything. 👁️",
-      "Look behind you...",
-      "JUST KIDDING! 😂 YOU GOT PRANKED!"
-    ];
+</form>
 
-    let msgIndex = 0;
-    let prankTriggered = false;
 
-    function addMessage(text, sender) {
-      const msg = document.createElement('div');
-      msg.classList.add('message', sender);
-      msg.innerText = text;
-      chat.appendChild(msg);
-      chat.scrollTop = chat.scrollHeight;
-    }
 
-    function sendMessage() {
-      const text = input.value.trim();
-      if (!text) return;
 
-      addMessage(text, 'user');
-      input.value = '';
 
-      if (msgIndex < prankMessages.length) {
-        setTimeout(() => {
-          const botMsg = prankMessages[msgIndex];
-          addMessage(botMsg, 'bot');
-
-          if (botMsg.includes("Look behind you")) {
-            document.body.classList.add('glitch');
-            setTimeout(() => {
-              document.body.classList.remove('glitch');
-            }, 2000);
-          }
-
-          if (botMsg.includes("YOU GOT PRANKED")) {
-            chat.style.background = "#ff0044";
-            document.body.style.background = "#000";
-          }
-
-          msgIndex++;
-        }, 1200);
-      } else {
-        setTimeout(() => {
-          addMessage("I'm done messing with you 😆", 'bot');
-        }, 1000);
-      }
-    }
-
-    input.addEventListener('keypress', e => {
-      if (e.key === 'Enter') sendMessage();
-    });
-
-    // Start with first message automatically
-    window.onload = () => {
-      setTimeout(() => {
-        addMessage(prankMessages[0], 'bot');
-        msgIndex++;
-      }, 1000);
-    };
-  </script>
 </body>
 </html>
