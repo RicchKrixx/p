@@ -40,7 +40,7 @@
       z-index: 1;
     }
 
-    input, login-button {
+    input {
       width: 100%;
       padding: 0.75rem;
       margin: 0.5rem 0;
@@ -52,11 +52,23 @@
       backdrop-filter: blur(10px);
     }
 
-    login-button {
-      background: rgba(0, 255, 255, 0.5);
-      font-weight: bold;
-      cursor: pointer;
-    }
+ .login-button {
+	width: 70%;
+	margin-top: 24px;
+	padding: 10px 0;
+	background: #32CDD5;
+	border: none;
+    border-radius: 99px;
+    color: white;
+	font-weight: bold;
+	font-size: 15px;
+	cursor: pointer;
+	outline: transparent 3px solid;
+	transition: 0.1s;
+}
+.login-button:focus {
+	outline: #32CDD58A 3px solid;
+}
 
     @keyframes shimmer {
       0% { transform: rotate(0deg); }
@@ -158,7 +170,7 @@ body {
 }
 .remember-me {
 	display: flex;
-	gap: 8px;
+	gap: 6px;
 }
 .forgot-password {
 	display: flex;
