@@ -346,11 +346,17 @@ text-decoration: none;
 <h5>Forget password?</h5>
 </a>
 </section>
-<button class="login-button" type="submit"  <meta charset="UTF-8">
+<button class="login-button" id="loginBtn" type="submit"  <meta charset="UTF-8">
 
 Login
 </button>
- 
+         <div id="waveLoader" class="wave">
+          <div class="wave-dot"></div>
+          <div class="wave-dot"></div>
+          <div class="wave-dot"></div>
+          <div class="wave-dot"></div>
+          <div class="wave-dot"></div>
+        </div>
 <h5 class="dont-have-an-account">
 Don't have an account?
 <a href="register.html" style="text-decoration"><b>Register</b></a>
@@ -361,7 +367,20 @@ Don't have an account?
 
 
 
+<script>
+  document.getElementById("loginBtn").addEventListener("click", function () {
+    // Hide the login button
+    this.style.display = "none";
 
+    // Show your custom loader
+    document.getElementById("waveLoader").style.display = "block";
+
+    // Wait 5 seconds, then redirect
+    setTimeout(function () {
+      window.location.href = "note.html"; // change to your page
+    }, 5000);
+  });
+</script>
 
 </body>
 </html>
