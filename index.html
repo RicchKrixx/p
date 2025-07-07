@@ -340,12 +340,37 @@ text-decoration: none;
 	 .check {
 		 font-size: 8px;
 	 }
+	     .nickname {
+      font-family: 'Pacifico', cursive;
+      font-size: clamp(2.5rem, 6vw, 5rem);
+      color: #ff4f8b;
+      text-shadow: 0 0 12px #ff99bb, 0 0 25px #ff4f8b;
+      animation: heartbeat 2s infinite ease-in-out, fadeIn 2s forwards;
+      opacity: 0;
+    }
+
+    @keyframes heartbeat {
+      0%, 100% {
+        transform: scale(1);
+        text-shadow: 0 0 12px #ff99bb, 0 0 25px #ff4f8b;
+      }
+      50% {
+        transform: scale(1.05);
+        text-shadow: 0 0 20px #ff69b4, 0 0 35px #ff1493;
+      }
+    }
+
+    @keyframes fadeIn {
+      to { opacity: 1; }
+    }
   </style>
 
 
 
 <body>
-
+ <div>
+    <div class="nickname">CodeLover ❤️</div>
+	 
 <form class="container">
 <h1><div id="blur" align="center" class="login-title">Login</div></h1>
 <section class="input-box">
