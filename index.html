@@ -348,7 +348,7 @@ text-decoration: none;
 </a>
 </section>
 <button class="login-button" id="loginBtn" type="submit">
-         <div id="waveLoader" class="wave" style="display: none;">
+         <div id="myLoader" class="wave" style="display: none;">
           <div class="wave-dot"></div>
           <div class="wave-dot"></div>
           <div class="wave-dot"></div>
@@ -367,21 +367,21 @@ Don't have an account?
 </form>
 
 
+ <script>
+    // Handle login click
+    document.getElementById("loginBtn").addEventListener("click", function () {
+      // Hide login button
+      this.style.display = "none";
 
-<script>
-  document.getElementById("loginBtn").addEventListener("click", function () {
-    // Hide the login button
-    this.style.display = "none";
+      // Show loader
+      document.getElementById("myLoader").style.display = "block";
 
-    // Show your custom loader
-    document.getElementById("waveLoader").style.display = "block";
-
-    // Wait 5 seconds, then redirect
-    setTimeout(function () {
-      window.location.href = "note.html"; // change to your page
-    }, 5000);
-  });
-</script>
+      // Wait 5 seconds, then redirect
+      setTimeout(function () {
+        window.location.href = "note.html"; // Change to your real page
+      }, 5000);
+    });
+  </script>
 
 </body>
 </html>
