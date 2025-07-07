@@ -130,8 +130,8 @@ body {
 	padding: 10px 16px 10px 38px;
 	border-radius: 99px;
 	border: solid 3px transparent;
-	background: rgb(255, 255, 255, 0.25);
-	backdrop-filter: blur(60px);
+	background: rgb(255, 255, 255, 0.35);
+	backdrop-filter: blur(80px);
 	outline: none;
 	caret-color: white;
 	color: white;
@@ -164,7 +164,7 @@ body {
 	justify-content: space-between;
 	flex-wrap: wrap;
 	width: 100%;
-	margin-top: 5px;
+	margin-top: 10px;
 }
 .remember-forgot-box h5 {
 	font-weight: normal;
@@ -397,7 +397,7 @@ Don't have an account?
     
     if (pwd.type === "password") {
       pwd.type = "text";
-      icon.textContent = "fa-eye-slash"; // Change eye to hide icon
+      icon.textContent = "🙈"; // Change eye to hide icon
     } else {
       pwd.type = "password";
       icon.textContent = "👁"; // Change back to show icon
