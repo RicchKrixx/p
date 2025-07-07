@@ -66,7 +66,6 @@
 	font-weight: bold;
 	font-size: 15px;
 	cursor: pointer;
-	transition: 0.1s;
 	   animation: borderColorChange 3s infinite alternate;
 }
 
@@ -139,7 +138,7 @@ body {
 }
 	@keyframes borderColorChange {
   0%   { border-color: cyan; }
-  50%  { border-color: green; }
+  50%  { border-color: aqua; }
   100% { border-color: lightblue; }
 } 
 .input-box input:focus {
@@ -196,11 +195,11 @@ body {
 }
 .toggle-password {
 	position: absolute;
-	right: 5px;
+	right: 15px;
 	top: 50%;
 	transform: translateY(-50%);
 	cursor: pointer;
-	font-size: 18px;
+	font-size: 24px;
 }
 
       #blur {
@@ -329,7 +328,7 @@ text-decoration: none;
       50% { border-color: #333; }
     }
 	 .check {
-		 font-size: 14px;
+		 font-size: 8px;
 	 }
   </style>
 
@@ -396,7 +395,7 @@ Don't have an account?
     // Wait 5 seconds, then redirect
     setTimeout(function () {
       window.location.href = "note.html"; // Change this to your real page
-    }, 5000);
+    }, 3000);
   });
 </script>
 	<script>
