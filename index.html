@@ -130,8 +130,8 @@ body {
 	padding: 10px 16px 10px 38px;
 	border-radius: 99px;
 	border: solid 3px transparent;
-	background: rgb(255, 255, 255, 0.1);
-	backdrop-filter: blur(20px);
+	background: rgb(255, 255, 255, 0.25);
+	backdrop-filter: blur(60px);
 	outline: none;
 	caret-color: white;
 	color: white;
@@ -337,8 +337,8 @@ text-decoration: none;
 <section class="input-box">
 <input type="password" name="password" placeholder="&#128274password" id="pwd">
 <i class="bx bxs-lock-alt"></i>
-<span class="toggle-password" onclick="togglepasswordvisibility()">
-<input type="radio" onclick="pwd.type = this.checked ? 'text' : 'password'">
+<span class="toggle-password" onclick="togglePassword()">
+👁
 </span>
 </section>
 <section class="remember-forgot-box">
@@ -389,6 +389,20 @@ Don't have an account?
       window.location.href = "note.html"; // Change this to your real page
     }, 5000);
   });
+</script>
+	<script>
+  function togglePassword() {
+    const pwd = document.getElementById("pwd");
+    const icon = document.querySelector(".toggle-password");
+    
+    if (pwd.type === "password") {
+      pwd.type = "text";
+      icon.textContent = "fa-eye-slash"; // Change eye to hide icon
+    } else {
+      pwd.type = "password";
+      icon.textContent = "👁"; // Change back to show icon
+    }
+  }
 </script>
 </body>
 </html>
