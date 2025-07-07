@@ -6,35 +6,51 @@
   <title>Support • Like • Share • Follow</title>
 
   <style>
-    /* ----------  Design tokens ---------- */
     :root {
       --bg1: #0f2027;
       --bg2: #203a43;
       --bg3: #2c5364;
-      --word-delay: 0.9s;        /* time between lines */
+      --word-delay: 0.9s;
       --txt-light: #ffffff;
-      --note-delay: 5.7s;        /* (lines × delay) + little buffer */
+      --note-delay: 5.7s;
     }
 
-    /* ----------  Page shell ---------- */
-    *,
-    *::before,
-    *::after { box-sizing: border-box; }
+    * {
+      box-sizing: border-box;
+    }
 
     body {
       margin: 0;
       min-height: 100vh;
-      display: grid;
-      place-items: center;
-      padding: 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       font-family: "Segoe UI", sans-serif;
       background: linear-gradient(135deg, var(--bg1), var(--bg2) 55%, var(--bg3));
       color: var(--txt-light);
-      overflow-x: hidden;
-      text-align: center;
+      padding: 1rem;
+      overflow: hidden;
     }
 
-    /* ----------  Call-to-action block ---------- */
+    .container {
+      backdrop-filter: blur(25px);
+      -webkit-backdrop-filter: blur(25px);
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 24px;
+      box-shadow: 0 8px 25px rgba(0, 255, 255, 0.3);
+      padding: 2rem 1.5rem;
+      max-width: 500px;
+      width: 100%;
+      text-align: center;
+      animation: fadeInContainer 1s ease-in;
+    }
+
+    @keyframes fadeInContainer {
+      from { opacity: 0; transform: scale(0.95); }
+      to { opacity: 1; transform: scale(1); }
+    }
+
     .cta {
       display: grid;
       gap: 0.5em;
@@ -42,13 +58,12 @@
 
     .line {
       font-weight: 700;
-      font-size: clamp(2.2rem, 6vw + 1rem, 6rem);
+      font-size: clamp(2rem, 5vw + 1rem, 4rem);
       letter-spacing: 0.05em;
       opacity: 0;
       transform: translateY(40px) scale(0.95);
       animation: rise 0.7s cubic-bezier(0.22, 1, 0.36, 1) forwards;
       animation-delay: calc(var(--i) * var(--word-delay));
-      /* keeps emojis’ native colours */
       color: var(--txt-light);
     }
 
@@ -56,40 +71,47 @@
       to { opacity: 1; transform: translateY(0) scale(1); }
     }
 
-    /* ----------  Note ---------- */
     .note {
-      margin-top: 2.5rem;
-      font-size: clamp(1rem, 3vw, 1.4rem);
-      line-height: 1.4;
-      max-width: 32ch;
+      margin-top: 2rem;
+      font-size: clamp(1rem, 3vw, 1.3rem);
+      line-height: 1.5;
+      max-width: 90%;
+      margin-left: auto;
+      margin-right: auto;
       opacity: 0;
       animation: fadeIn 1s ease forwards;
       animation-delay: var(--note-delay);
     }
 
-    @keyframes fadeIn { to { opacity: 1; } }
+    @keyframes fadeIn {
+      to { opacity: 1; }
+    }
 
-    /* ----------  Small screens tweaks ---------- */
-    @media (max-width: 420px) {
-      .line { letter-spacing: normal; }
+    @media (max-width: 480px) {
+      .container {
+        padding: 1.5rem 1rem;
+      }
+      .line {
+        font-size: 1.8rem;
+      }
     }
   </style>
 </head>
 
 <body>
 
-  <section>
+  <div class="container">
     <div class="cta">
       <div class="line" style="--i:0">Please 🙏</div>
       <div class="line" style="--i:1">Like ❤️</div>
       <div class="line" style="--i:2">Comment 💬</div>
       <div class="line" style="--i:3">Share 🔁</div>
       <div class="line" style="--i:4">Follow➕For More🔥</div>
-      <div class="line" style="--i:5">Thanks for watching</div>
+      <div class="line" style="--i:5">🎉Thanks for watching🎉</div>
     </div>
 
-    <p class="note">👤Thanks for watching👀-Please follow me📦 — let’s grow together 👨‍💻</p>
-  </section>
+    <p class="note">👤Thanks for watching👀 — Please follow me📦 — let’s grow together 👨‍💻</p>
+  </div>
 
 </body>
 </html>
