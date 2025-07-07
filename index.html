@@ -66,8 +66,8 @@
 	font-weight: bold;
 	font-size: 15px;
 	cursor: pointer;
-	outline: transparent 3px solid;
 	transition: 0.1s;
+	   animation: borderColorChange 3s infinite alternate;
 }
 
     @keyframes shimmer {
@@ -135,7 +135,13 @@ body {
 	color: white;
 	font-weight: 500;
 	transition: 0.25s;
+	  animation: borderColorChange 3s infinite alternate;
 }
+	@keyframes borderColorChange {
+  0%   { border-color: cyan; }
+  50%  { border-color: magenta; }
+  100% { border-color: lightblue; }
+} 
 .input-box input:focus {
 	border: solid 3px rgb(255, 255, 255, 0.25);
 }
