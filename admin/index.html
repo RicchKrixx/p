@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Admin | Register Event</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #0f172a;
+      color: #fff;
+      padding: 2rem;
+    }
+    h2 {
+      color: cyan;
+    }
+    input, button {
+      padding: 10px;
+      width: 100%;
+      margin-bottom: 15px;
+      border: none;
+      border-radius: 5px;
+    }
+    input {
+      background: #1e293b;
+      color: white;
+    }
+    button {
+      background: cyan;
+      color: #000;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    #result {
+      margin-top: 1rem;
+      background: #1e293b;
+      padding: 1rem;
+      border-radius: 5px;
+    }
+  </style>
+</head>
+<body>
+  <h2>Register New Event</h2>
+  <form id="eventForm">
+    <input type="text" id="eventName" placeholder="Event Name" required />
+    <input type="text" id="organizer" placeholder="Organizer Name" required />
+    <input type="password" id="password" placeholder="Organizer Password" required />
+    <input type="date" id="expiryDate" required />
+    <button type="submit">Register Event</button>
+  </form>
+
+  <div id="result" style="display:none;"></div>
+
+  <!-- Firebase SDK -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getFirestore, doc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+    const firebaseConfig = {
+  apiKey: "AIzaSyCMEyb1jdntV14bKVvoPBaApB2wi-yTz6c",
+  authDomain: "jasdy-vote.firebaseapp.com",
+  projectId: "jasdy-vote",
+  storageBucket: "jasdy-vote.firebasestorage.app",
+  messagingSenderId: "191017072761",
+  appId: "1:191017072761:web:c1b0a30d75dcbc94173ca8",
+  measurementId: "G-MELT3K9R0T"
+};
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    function generateEventID() {
+      return 'EVT' + Math.random().toString(36).substring(2, 8).toUpperCase();
+    }
+
+    const form = document.getElementById("eventForm");
+    const resultBox = document.getElementById("result");
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const eventID = generateEventID();
+
+      const data = {
+        eventName: document.getElementById("eventName").value.trim(),
+        organizer: document.getElementById("organizer").value.trim(),
+        password: document.getElementById("password").value.trim(),
+        expiryDate: document.getElementById("expiryDate").value,
+        createdAt: serverTimestamp(),
+        showVoteCount: true,
+        showTotalVotes: true,
+        showTotalAmount: true
+      };
+
+      try {
+        await setDoc(doc(db, "events", eventID), data);
+        resultBox.style.display = "block";
+        resultBox.innerHTML = `
+          <p><strong>✅ Event Created Successfully!</strong></p>
+          <p><strong>Event ID:</strong> ${eventID}</p>
+          <p><strong>Event Link:</strong> <a href="event.html?id=${eventID}" target="_blank">event.html?id=${eventID}</a></p>
+          <p><strong>Organizer Login:</strong> organizer.html</p>
+          <p><strong>Password:</strong> ${data.password}</p>
+        `;
+        form.reset();
+      } catch (error) {
+        alert("❌ Failed to create event.");
+        console.error(error);
+      }
+    });
+  </script>
+</body>
+</html>
