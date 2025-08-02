@@ -2,18 +2,18 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Dashboard | Jasdy Vote</title>
+  <title>JasdyVote | Dashboard</title>
   <style>
     body {
-      font-family: Arial, sans-serif;
-      background: #f4f7fa;
       margin: 0;
-      padding: 0;
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f4;
+      color: #333;
     }
     header {
-      background: #0f172a;
-      color: #fff;
-      padding: 1rem;
+      background-color: #1e293b;
+      color: white;
+      padding: 16px;
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -22,168 +22,119 @@
       margin: 0;
       font-size: 1.2rem;
     }
-    header button {
-      background: #e11d48;
-      color: white;
+    .logout-btn {
+      background: #ef4444;
       border: none;
-      padding: 0.5rem 1rem;
-      border-radius: 5px;
+      padding: 8px 16px;
+      color: white;
+      border-radius: 6px;
       cursor: pointer;
     }
-    main {
-      padding: 1rem;
+    .container {
+      padding: 20px;
     }
-    .section {
+    .card {
       background: white;
       border-radius: 10px;
-      padding: 1rem;
-      margin-bottom: 1rem;
+      padding: 16px;
       box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      margin-bottom: 16px;
     }
-    .section h2 {
-      margin-top: 0;
+    .card h2 {
+      margin: 0 0 10px;
+      font-size: 1.1rem;
     }
-    label {
-      display: block;
-      margin-top: 10px;
+    .card p {
+      margin: 0 0 10px;
     }
-    input, textarea {
-      width: 100%;
-      padding: 8px;
-      margin-top: 5px;
-      border: 1px solid #ccc;
-      border-radius: 5px;
+    .actions {
+      display: flex;
+      gap: 10px;
     }
-    .event-list {
-      margin-top: 1rem;
-    }
-    .event {
-      padding: 0.8rem;
-      background: #f9fafb;
-      border: 1px solid #e5e7eb;
+    .actions button {
+      background: #3b82f6;
+      border: none;
+      padding: 8px 12px;
+      color: white;
       border-radius: 6px;
-      margin-bottom: 0.6rem;
+      cursor: pointer;
     }
   </style>
 </head>
 <body>
   <header>
-    <h1>Welcome, <span id="name"></span></h1>
-    <button onclick="logout()">Logout</button>
-  </header>  <main>
-    <div class="section">
-      <h2>Create New Event</h2>
-      <form id="eventForm">
-        <label>Event Name
-          <input type="text" id="eventName" required />
-        </label>
-        <label>Description
-          <textarea id="eventDesc" required></textarea>
-        </label>
-        <label>Logo Image URL
-          <input type="url" id="eventLogo" required />
-        </label>
-        <label>Start Date
-          <input type="date" id="startDate" required />
-        </label>
-        <label>End Date
-          <input type="date" id="endDate" required />
-        </label>
-        <button type="submit">Create Event</button>
-      </form>
-    </div><div class="section">
+    <h1>JasdyVote Dashboard</h1>
+    <button class="logout-btn" id="logoutBtn">Logout</button>
+  </header>
+  <div class="container">
+    <div class="card">
+      <h2>Welcome back!</h2>
+      <p id="userEmail">Loading...</p>
+    </div><div class="card">
   <h2>Your Events</h2>
-  <div class="event-list" id="eventList">
-    <!-- Events will show here -->
+  <div id="eventList">Loading events...</div>
+  <div class="actions">
+    <button onclick="location.href='create-event.html'">Create New Event</button>
   </div>
 </div>
 
-  </main>  <!-- Firebase -->  <script type="module">
+  </div>  <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
     import {
-      getFirestore, collection, addDoc, getDocs, query, where, serverTimestamp
-    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-    import {
-      getAuth, onAuthStateChanged, signOut
+      getAuth,
+      onAuthStateChanged,
+      signOut
     } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+    import {
+      getFirestore,
+      collection,
+      query,
+      where,
+      getDocs
+    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyCMEyb1jdntV14bKVvoPBaApB2wi-yTz6c",
       authDomain: "jasdy-vote.firebaseapp.com",
       projectId: "jasdy-vote",
-      storageBucket: "jasdy-vote.firebasestorage.app",
+      storageBucket: "jasdy-vote.appspot.com",
       messagingSenderId: "191017072761",
       appId: "1:191017072761:web:c1b0a30d75dcbc94173ca8",
       measurementId: "G-MELT3K9R0T"
     };
 
     const app = initializeApp(firebaseConfig);
+    const auth = getAuth();
     const db = getFirestore(app);
-    const auth = getAuth(app);
 
-    const eventForm = document.getElementById("eventForm");
+    const userEmailEl = document.getElementById("userEmail");
     const eventList = document.getElementById("eventList");
-    const organizerName = document.getElementById("organizerName");
-
-    let currentUser = null;
 
     onAuthStateChanged(auth, async (user) => {
-      if (!user) {
-        location.href = "login.html";
+      if (user) {
+        userEmailEl.textContent = user.email;
+
+        const q = query(collection(db, "events"), where("ownerId", "==", user.uid));
+        const querySnapshot = await getDocs(q);
+
+        eventList.innerHTML = "";
+        if (querySnapshot.empty) {
+          eventList.innerHTML = "<p>No events found.</p>";
+        } else {
+          querySnapshot.forEach((doc) => {
+            const data = doc.data();
+            const div = document.createElement("div");
+            div.innerHTML = `<strong>${data.name}</strong><br>From ${data.startDate} to ${data.endDate}`;
+            eventList.appendChild(div);
+          });
+        }
       } else {
-        currentUser = user;
-        organizerName.textContent = user.displayName || user.email;
-        loadEvents();
+        window.location.href = "login.html";
       }
     });
 
-    eventForm.onsubmit = async (e) => {
-      e.preventDefault();
-      const name = eventName.value.trim();
-      const desc = eventDesc.value.trim();
-      const logo = eventLogo.value.trim();
-      const start = startDate.value;
-      const end = endDate.value;
-
-      try {
-        await addDoc(collection(db, "events"), {
-          name,
-          description: desc,
-          logoURL: logo,
-          organizerId: currentUser.uid,
-          startDate: start,
-          endDate: end,
-          totalVotes: 0,
-          createdAt: serverTimestamp()
-        });
-        eventForm.reset();
-        loadEvents();
-      } catch (err) {
-        alert("Error: " + err.message);
-      }
-    };
-
-    async function loadEvents() {
-      eventList.innerHTML = "Loading...";
-      const q = query(collection(db, "events"), where("organizerId", "==", currentUser.uid));
-      const snapshot = await getDocs(q);
-      eventList.innerHTML = "";
-      snapshot.forEach(doc => {
-        const d = doc.data();
-        const div = document.createElement("div");
-        div.className = "event";
-        div.innerHTML = `
-          <strong>${d.name}</strong><br>
-          ${d.description}<br>
-          Start: ${d.startDate}, End: ${d.endDate}<br>
-          Votes: ${d.totalVotes}
-        `;
-        eventList.appendChild(div);
-      });
-    }
-
-    function logout() {
+    document.getElementById("logoutBtn").addEventListener("click", () => {
       signOut(auth);
-    }
+    });
   </script></body>
 </html>
