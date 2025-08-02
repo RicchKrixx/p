@@ -2,93 +2,112 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Sign Up – JasdyVote</title>
+  <title>Jasdy Vote - Login</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
     body {
+      font-family: Arial, sans-serif;
       background: #0f172a;
       color: white;
-      font-family: Arial, sans-serif;
-      padding: 30px;
+      padding: 20px;
+    }
+    .form-container {
+      max-width: 400px;
+      margin: auto;
+      background: #1e293b;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px #00ffff50;
     }
     input, button {
       width: 100%;
-      padding: 12px;
-      margin-top: 10px;
+      padding: 10px;
+      margin: 10px 0;
       border: none;
-      border-radius: 10px;
+      border-radius: 8px;
+    }
+    input {
+      background: #334155;
+      color: white;
     }
     button {
-      background-color: #06b6d4;
+      background: #06b6d4;
       color: white;
       font-weight: bold;
+      cursor: pointer;
+    }
+    .toggle {
+      position: relative;
+    }
+    .toggle-emoji {
+      position: absolute;
+      right: 10px;
+      top: 12px;
+      cursor: pointer;
     }
   </style>
 </head>
 <body>
-  <h2>👥 Register to Host an Event</h2>
-  <form id="signupForm">
-    <input type="text" id="orgName" placeholder="Your Name or Organization" required />
-    <input type="email" id="email" placeholder="Email Address" required />
-    <input type="password" id="password" placeholder="Password (min 6 characters)" required />
-    <button type="submit">Create Account</button>
-  </form>
 
-  <!-- Firebase SDKs -->
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js"></script>
+<div class="form-container">
+  <h2>Register for Jasdy Vote</h2>
+  <input type="text" id="name" placeholder="Name or Organization Name" />
+  <input type="email" id="email" placeholder="Email Address" />
+  
+  <div class="toggle">
+    <input type="password" id="password" placeholder="Password" />
+    <span class="toggle-emoji" onclick="togglePassword()">👁️</span>
+  </div>
 
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-    import { getAuth, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-    import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+  <button onclick="register()">Register</button>
+  <p>Already have an account? <a href="#" onclick="showLogin()">Login</a></p>
+</div>
 
-    const firebaseConfig = {
-      apiKey: "AIzaSyCMEyb1jdntV14bKVvoPBaApB2wi-yTz6c",
-      authDomain: "jasdy-vote.firebaseapp.com",
-      projectId: "jasdy-vote",
-      storageBucket: "jasdy-vote.firebasestorage.app",
-      messagingSenderId: "191017072761",
-      appId: "1:191017072761:web:c1b0a30d75dcbc94173ca8",
-      measurementId: "G-MELT3K9R0T"
-    };
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+  import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, updateProfile } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getFirestore(app);
+  const firebaseConfig = {
+    apiKey: "AIzaSyCMEyb1jdntV14bKVvoPBaApB2wi-yTz6c",
+    authDomain: "jasdy-vote.firebaseapp.com",
+    projectId: "jasdy-vote",
+    storageBucket: "jasdy-vote.firebasestorage.app",
+    messagingSenderId: "191017072761",
+    appId: "1:191017072761:web:c1b0a30d75dcbc94173ca8",
+    measurementId: "G-MELT3K9R0T"
+  };
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
 
-    const signupForm = document.getElementById("signupForm");
+  async function register() {
+    const name = document.getElementById("name").value.trim();
+    const email = document.getElementById("email").value.trim();
+    const password = document.getElementById("password").value;
 
-    signupForm.addEventListener("submit", async (e) => {
-      e.preventDefault();
+    if (!name || !email || !password) return alert("Please fill all fields");
 
-      const name = orgName.value.trim();
-      const email = email.value.trim();
-      const password = password.value;
+    try {
+      const cred = await createUserWithEmailAndPassword(auth, email, password);
+      await updateProfile(cred.user, { displayName: name });
+      alert("Registration successful!");
+      // redirect or show event creation page
+    } catch (e) {
+      alert(e.message);
+    }
+  }
 
-      if (!name || !email || !password) {
-        alert("Please fill in all fields.");
-        return;
-      }
+  function togglePassword() {
+    const pw = document.getElementById("password");
+    const emoji = document.querySelector(".toggle-emoji");
+    if (pw.type === "password") {
+      pw.type = "text";
+      emoji.textContent = "🙈";
+    } else {
+      pw.type = "password";
+      emoji.textContent = "👁️";
+    }
+  }
+</script>
 
-      try {
-        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-        const user = userCredential.user;
-
-        // Save extra user info to Firestore
-        await setDoc(doc(db, "users", user.uid), {
-          name,
-          email,
-          createdAt: new Date().toISOString()
-        });
-
-        alert("Account created successfully!");
-        window.location.href = "register-event.html";
-      } catch (error) {
-        alert("Error: " + error.message);
-      }
-    });
-  </script>
 </body>
 </html>
