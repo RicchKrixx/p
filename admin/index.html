@@ -1,78 +1,119 @@
-<!DOCTYPE html>
-<html lang="en">
+<!DOCTYPE html><html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Voting Admin | Dashboard</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Event Admin Dashboard</title>
   <style>
     body {
       background: #0f172a;
       color: white;
-      font-family: sans-serif;
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+    header {
+      background: #1e293b;
+      padding: 20px;
+      text-align: center;
+      font-size: 24px;
+      font-weight: bold;
+    }
+    .container {
       padding: 20px;
     }
-    h1 { color: cyan; }
-    button { padding: 10px 16px; border: none; background: cyan; color: #000; cursor: pointer; margin: 10px 0; border-radius: 6px; }
+    .event-grid {
+      display: grid;
+      gap: 20px;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    }
     .event-card {
       background: #1e293b;
       padding: 16px;
+      border-radius: 12px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    }
+    .event-card img {
+      width: 100%;
+      height: 150px;
+      object-fit: cover;
       border-radius: 8px;
-      margin-bottom: 16px;
+    }
+    .event-card h3 {
+      margin-top: 10px;
+    }
+    .event-card button {
+      margin-top: 10px;
+      padding: 6px 12px;
+      background: crimson;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    #createBtn {
+      background: teal;
+      padding: 10px 20px;
+      border: none;
+      color: white;
+      border-radius: 6px;
+      cursor: pointer;
+      margin-bottom: 20px;
     }
     .popup {
       display: none;
       position: fixed;
       top: 0; left: 0; right: 0; bottom: 0;
-      background: rgba(0,0,0,0.6);
+      background: rgba(0, 0, 0, 0.6);
       justify-content: center;
       align-items: center;
+      z-index: 999;
     }
     .popup-content {
-      background: #fff;
-      color: #000;
+      background: #1e293b;
       padding: 20px;
+      border-radius: 10px;
       width: 90%;
       max-width: 400px;
-      border-radius: 8px;
     }
-    input, textarea {
+    .popup-content input, .popup-content textarea {
       width: 100%;
-      padding: 8px;
-      margin: 6px 0;
-      border-radius: 5px;
-      border: 1px solid #ccc;
+      padding: 10px;
+      margin: 8px 0;
+      border: none;
+      border-radius: 6px;
     }
-    .logo-preview {
-      width: 100px;
-      margin: 10px 0;
+    .status {
+      margin-top: 8px;
+      font-size: 14px;
+      font-style: italic;
+      color: lightgreen;
+    }
+    .share-link {
+      font-size: 12px;
+      margin-top: 6px;
+      color: lightblue;
+      word-break: break-all;
     }
   </style>
 </head>
 <body>
-  <h1>Event Admin Dashboard</h1>
-  <button onclick="openPopup()">+ Create New Event</button>
-
-  <div id="eventList"></div>
-
-  <!-- Popup -->
-  <div class="popup" id="popup">
+  <header>Event Admin Dashboard</header>
+  <div class="container">
+    <button id="createBtn">+ Create New Event</button>
+    <div class="event-grid" id="eventList"></div>
+  </div>  <div class="popup" id="popup">
     <div class="popup-content">
-      <h3>Create Event</h3>
-      <input type="text" id="eventTitle" placeholder="Event Title" required />
-      <textarea id="eventDesc" placeholder="Event Description"></textarea>
-      <input type="date" id="startDate" />
-      <input type="date" id="endDate" />
-      <input type="file" id="eventLogo" accept="image/*" onchange="previewLogo()" />
-      <img id="logoPreview" class="logo-preview" style="display:none" />
-      <button onclick="createEvent()">Submit</button>
-      <button onclick="closePopup()">Cancel</button>
+      <h3>Create New Event</h3>
+      <input type="text" id="eventName" placeholder="Event Name" required />
+      <input type="file" id="eventLogo" accept="image/*" />
+      <img id="logoPreview" style="display:none;width:100%;margin-top:10px;border-radius:8px;" />
+      <input type="date" id="startDate" required />
+      <input type="date" id="endDate" required />
+      <button onclick="createEvent()">Create</button>
     </div>
-  </div>
-
-  <!-- Firebase SDK -->
-  <script type="module">
+  </div>  <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-    import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+    import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
     const firebaseConfig = {
   apiKey: "AIzaSyCMEyb1jdntV14bKVvoPBaApB2wi-yTz6c",
@@ -86,89 +127,64 @@
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
+    const eventList = document.getElementById("eventList");
+    const popup = document.getElementById("popup");
 
-    const popup = document.getElementById('popup');
-    const eventList = document.getElementById('eventList');
-    let logoBase64 = "";
-
-    function openPopup() {
-      popup.style.display = "flex";
-    }
-
-    function closePopup() {
-      popup.style.display = "none";
-    }
-
-    window.openPopup = openPopup;
-    window.closePopup = closePopup;
-
-    window.previewLogo = () => {
-      const file = document.getElementById('eventLogo').files[0];
+    document.getElementById("createBtn").onclick = () => popup.style.display = "flex";
+    document.getElementById("eventLogo").onchange = e => {
+      const file = e.target.files[0];
       const reader = new FileReader();
-      reader.onloadend = () => {
-        logoBase64 = reader.result;
-        const preview = document.getElementById('logoPreview');
-        preview.src = logoBase64;
-        preview.style.display = 'block';
+      reader.onload = () => {
+        document.getElementById("logoPreview").src = reader.result;
+        document.getElementById("logoPreview").style.display = "block";
       };
       if (file) reader.readAsDataURL(file);
     };
 
-    window.createEvent = async () => {
-      const title = document.getElementById('eventTitle').value.trim();
-      const desc = document.getElementById('eventDesc').value.trim();
-      const start = document.getElementById('startDate').value;
-      const end = document.getElementById('endDate').value;
-      const id = "EVT" + Date.now();
+    async function createEvent() {
+      const name = document.getElementById("eventName").value;
+      const logo = document.getElementById("logoPreview").src;
+      const start = document.getElementById("startDate").value;
+      const end = document.getElementById("endDate").value;
+      const id = Date.now().toString();
+      if (!name || !logo || !start || !end) return alert("All fields required");
+      await addDoc(collection(db, "events"), { id, name, logo, start, end });
+      popup.style.display = "none";
+    }
 
-      if (!title || !start || !end || !logoBase64) {
-        alert("Fill in all fields and upload a logo.");
-        return;
-      }
+    function getStatus(start, end) {
+      const now = new Date();
+      const s = new Date(start);
+      const e = new Date(end);
+      if (now < s) return "Upcoming";
+      if (now >= s && now <= e) return "Ongoing";
+      return "Expired";
+    }
 
-      const eventData = { title, desc, logo: logoBase64, start, end, eventId: id };
-
-      try {
-        await addDoc(collection(db, "events"), eventData);
-        alert("Event created.");
-        closePopup();
-        loadEvents();
-      } catch (e) {
-        alert("Error: " + e.message);
-      }
-    };
-
-    async function loadEvents() {
+    function renderEvents(snapshot) {
       eventList.innerHTML = "";
-      const snapshot = await getDocs(collection(db, "events"));
       snapshot.forEach(docSnap => {
-        const data = docSnap.data();
-        const el = document.createElement("div");
-        el.className = "event-card";
-        el.innerHTML = `
-          <img src="${data.logo}" style="width:80px;height:80px;border-radius:10px" />
-          <h3>${data.title}</h3>
-          <p>${data.desc}</p>
-          <p><strong>ID:</strong> ${data.eventId}</p>
-          <p><strong>From:</strong> ${data.start} <strong>To:</strong> ${data.end}</p>
-          <p><a href="organizer.html?eventId=${data.eventId}">Share Link</a></p>
-          <button onclick="deleteEvent('${docSnap.id}')">Delete</button>
+        const e = docSnap.data();
+        const status = getStatus(e.start, e.end);
+        const link = `${location.origin}/event.html?id=${e.id}`;
+        eventList.innerHTML += `
+          <div class="event-card">
+            <img src="${e.logo}" alt="logo" />
+            <h3>${e.name}</h3>
+            <div class="status">Status: ${status}</div>
+            <div class="share-link">Link: ${link}</div>
+            <button onclick="deleteEvent('${docSnap.id}')">Delete</button>
+          </div>
         `;
-        eventList.appendChild(el);
       });
     }
 
-    window.deleteEvent = async (docId) => {
-      if (!confirm("Delete this event?")) return;
-      try {
+    async function deleteEvent(docId) {
+      if (confirm("Are you sure?")) {
         await deleteDoc(doc(db, "events", docId));
-        loadEvents();
-      } catch (e) {
-        alert("Error deleting: " + e.message);
       }
-    };
+    }
 
-    loadEvents();
-  </script>
-</body>
+    onSnapshot(collection(db, "events"), renderEvents);
+  </script></body>
 </html>
