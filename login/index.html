@@ -147,7 +147,7 @@
         try {
           await signInWithEmailAndPassword(auth, email, password);
           alert("Login successful!");
-          location.href = "/dashboard/"; // or your dashboard route
+          location.href = "/p/dashboard/"; // or your dashboard route
         } catch (e) {
           alert(e.message);
         }
@@ -160,7 +160,7 @@
             displayName: name
           });
           alert("Registration complete!");
-          location.href = "/dashboard/";
+          location.href = "/p/dashboard/";
         } catch (e) {
           alert(e.message);
         }
