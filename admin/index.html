@@ -1,217 +1,160 @@
-<!DOCTYPE html><html lang="en">
+<!DOCTYPE html>
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Admin Dashboard - Voting Events</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Voting Admin | Dashboard</title>
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #0f172a;
-      color: white;
+    * {
       margin: 0;
-      padding: 20px;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Segoe UI', sans-serif;
     }
-    h1 {
-      text-align: center;
-    }
-    .event-list {
-      display: grid;
-      gap: 16px;
-    }
-    .event-card {
-      background: #1e293b;
-      border-radius: 10px;
-      padding: 16px;
+    body {
       display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    .event-info {
-      display: flex;
-      gap: 12px;
-      align-items: center;
-    }
-    .event-info img {
-      width: 60px;
-      height: 60px;
-      border-radius: 8px;
-    }
-    .event-details p {
-      margin: 2px 0;
-    }
-    .event-actions button {
-      background: crimson;
-      border: none;
-      color: white;
-      padding: 6px 12px;
-      border-radius: 6px;
-      cursor: pointer;
-    }
-    .create-btn {
-      background: teal;
-      border: none;
-      padding: 10px 20px;
-      border-radius: 8px;
-      color: white;
-      font-size: 16px;
-      cursor: pointer;
-      display: block;
-      margin: 20px auto;
-    }
-    #createPopup {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100vw;
+      background: #0f172a;
+      color: #f1f5f9;
       height: 100vh;
-      background: rgba(0, 0, 0, 0.7);
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      display: none;
+      overflow: hidden;
     }
-    #createPopup .popup {
+    .sidebar {
+      width: 220px;
       background: #1e293b;
+      padding: 20px 0;
+      display: flex;
+      flex-direction: column;
+    }
+    .sidebar h2 {
+      text-align: center;
+      margin-bottom: 30px;
+      font-size: 20px;
+      color: #38bdf8;
+    }
+    .sidebar a {
+      padding: 15px 20px;
+      color: #f1f5f9;
+      text-decoration: none;
+      display: block;
+      transition: background 0.2s;
+    }
+    .sidebar a:hover,
+    .sidebar a.active {
+      background: #334155;
+    }
+
+    .main {
+      flex: 1;
       padding: 20px;
-      border-radius: 10px;
-      width: 90%;
-      max-width: 400px;
+      overflow-y: auto;
     }
-    #createPopup input,
-    #createPopup textarea {
-      width: 100%;
-      margin-bottom: 10px;
-      padding: 8px;
-      border-radius: 6px;
-      border: none;
-    }
-    #createPopup .actions {
+
+    header {
       display: flex;
       justify-content: space-between;
+      align-items: center;
+      margin-bottom: 30px;
+    }
+
+    header h1 {
+      font-size: 24px;
+    }
+
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 20px;
+    }
+
+    .card {
+      background: #1e293b;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+      transition: transform 0.2s;
+    }
+
+    .card:hover {
+      transform: scale(1.02);
+    }
+
+    .card h3 {
+      font-size: 18px;
+      margin-bottom: 10px;
+      color: #94a3b8;
+    }
+
+    .card p {
+      font-size: 24px;
+      font-weight: bold;
+      color: #38bdf8;
+    }
+
+    @media (max-width: 768px) {
+      body {
+        flex-direction: column;
+      }
+      .sidebar {
+        width: 100%;
+        flex-direction: row;
+        overflow-x: auto;
+      }
+      .sidebar a {
+        flex: 1;
+        text-align: center;
+        padding: 10px;
+        font-size: 14px;
+      }
     }
   </style>
 </head>
 <body>
-  <h1>Admin Voting Dashboard</h1>
-  <button class="create-btn" onclick="openPopup()">+ Create New Event</button>
-  <div class="event-list" id="eventList"></div>  <div id="createPopup">
-    <div class="popup">
-      <h3>Create Event</h3>
-      <input type="text" id="eventTitle" placeholder="Event Title" required />
-      <textarea id="eventDescription" rows="3" placeholder="Description"></textarea>
-      <input type="date" id="startDate" />
-      <input type="date" id="endDate" />
-      <input type="file" id="eventLogo" accept="image/*" />
-      <div class="actions">
-        <button onclick="createEvent()">Create</button>
-        <button onclick="closePopup()">Cancel</button>
+
+  <div class="sidebar">
+    <h2>Admin Panel</h2>
+    <a href="#" class="active">Dashboard</a>
+    <a href="#">Contestants</a>
+    <a href="#">Votes</a>
+    <a href="#">Earnings</a>
+    <a href="#">Users</a>
+    <a href="#">Messages</a>
+    <a href="#">Settings</a>
+    <a href="#">Logout</a>
+  </div>
+
+  <div class="main">
+    <header>
+      <h1>Dashboard Overview</h1>
+      <span>Welcome, Admin</span>
+    </header>
+
+    <section class="cards">
+      <div class="card">
+        <h3>Total Votes</h3>
+        <p id="totalVotes">0</p>
       </div>
-    </div>
-  </div>  <!-- Firebase SDK -->  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-    import {
-      getFirestore,
-      collection,
-      addDoc,
-      getDocs,
-      deleteDoc,
-      doc,
-      serverTimestamp,
-      onSnapshot
-    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-    import {
-      getStorage,
-      ref,
-      uploadBytes,
-      getDownloadURL
-    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
+      <div class="card">
+        <h3>Total Earnings</h3>
+        <p id="totalEarnings">₵0.00</p>
+      </div>
+      <div class="card">
+        <h3>Registered Users</h3>
+        <p id="userCount">0</p>
+      </div>
+      <div class="card">
+        <h3>Contestants</h3>
+        <p id="contestantCount">0</p>
+      </div>
+    </section>
+  </div>
 
-    const firebaseConfig = {
-  apiKey: "AIzaSyCMEyb1jdntV14bKVvoPBaApB2wi-yTz6c",
-  authDomain: "jasdy-vote.firebaseapp.com",
-  projectId: "jasdy-vote",
-  storageBucket: "jasdy-vote.firebasestorage.app",
-  messagingSenderId: "191017072761",
-  appId: "1:191017072761:web:c1b0a30d75dcbc94173ca8",
-  measurementId: "G-MELT3K9R0T"
-};
+  <script>
+    // Placeholder for real data
+    document.getElementById("totalVotes").textContent = "1,248";
+    document.getElementById("totalEarnings").textContent = "₵1,248.00";
+    document.getElementById("userCount").textContent = "302";
+    document.getElementById("contestantCount").textContent = "24";
+  </script>
 
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
-    const storage = getStorage(app);
-
-    const eventList = document.getElementById("eventList");
-
-    onSnapshot(collection(db, "events"), snapshot => {
-      eventList.innerHTML = "";
-      snapshot.forEach(doc => {
-        const data = doc.data();
-        const status = getStatus(data.startDate, data.endDate);
-
-        eventList.innerHTML += `
-          <div class="event-card">
-            <div class="event-info">
-              <img src="${data.logoURL}" alt="Event Logo" />
-              <div class="event-details">
-                <p><strong>${data.title}</strong> (${status})</p>
-                <p>ID: ${doc.id}</p>
-                <p>${data.startDate} - ${data.endDate}</p>
-              </div>
-            </div>
-            <div class="event-actions">
-              <button onclick="deleteEvent('${doc.id}', '${data.logoPath}')">Delete</button>
-            </div>
-          </div>
-        `;
-      });
-    });
-
-    function getStatus(start, end) {
-      const today = new Date();
-      const s = new Date(start);
-      const e = new Date(end);
-      if (today < s) return "Upcoming";
-      if (today > e) return "Expired";
-      return "Ongoing";
-    }
-
-    window.createEvent = async function () {
-      const title = document.getElementById("eventTitle").value;
-      const desc = document.getElementById("eventDescription").value;
-      const start = document.getElementById("startDate").value;
-      const end = document.getElementById("endDate").value;
-      const file = document.getElementById("eventLogo").files[0];
-      if (!title || !file || !start || !end) return alert("Fill all fields");
-
-      const storageRef = ref(storage, `event_logos/${Date.now()}_${file.name}`);
-      await uploadBytes(storageRef, file);
-      const url = await getDownloadURL(storageRef);
-
-      await addDoc(collection(db, "events"), {
-        title,
-        description: desc,
-        startDate: start,
-        endDate: end,
-        logoURL: url,
-        logoPath: storageRef.fullPath,
-        createdAt: serverTimestamp()
-      });
-
-      closePopup();
-    };
-
-    window.deleteEvent = async function (id, path) {
-      await deleteDoc(doc(db, "events", id));
-      const logoRef = ref(storage, path);
-      logoRef && logoRef.delete?.();
-    };
-
-    window.openPopup = () => {
-      document.getElementById("createPopup").style.display = "flex";
-    };
-
-    window.closePopup = () => {
-      document.getElementById("createPopup").style.display = "none";
-    };
-  </script></body>
+</body>
 </html>
