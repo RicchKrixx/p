@@ -1,159 +1,155 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Voting Admin | Dashboard</title>
+  <meta charset="UTF-8">
+  <title>Admin Dashboard | Voting Platform</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-      font-family: 'Segoe UI', sans-serif;
-    }
     body {
-      display: flex;
+      font-family: Arial, sans-serif;
       background: #0f172a;
-      color: #f1f5f9;
-      height: 100vh;
-      overflow: hidden;
-    }
-    .sidebar {
-      width: 220px;
-      background: #1e293b;
-      padding: 20px 0;
-      display: flex;
-      flex-direction: column;
-    }
-    .sidebar h2 {
-      text-align: center;
-      margin-bottom: 30px;
-      font-size: 20px;
-      color: #38bdf8;
-    }
-    .sidebar a {
-      padding: 15px 20px;
-      color: #f1f5f9;
-      text-decoration: none;
-      display: block;
-      transition: background 0.2s;
-    }
-    .sidebar a:hover,
-    .sidebar a.active {
-      background: #334155;
-    }
-
-    .main {
-      flex: 1;
+      color: white;
+      margin: 0;
       padding: 20px;
-      overflow-y: auto;
     }
-
     header {
       display: flex;
       justify-content: space-between;
       align-items: center;
       margin-bottom: 30px;
     }
-
-    header h1 {
-      font-size: 24px;
-    }
-
-    .cards {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 20px;
-    }
-
-    .card {
-      background: #1e293b;
-      padding: 20px;
-      border-radius: 12px;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-      transition: transform 0.2s;
-    }
-
-    .card:hover {
-      transform: scale(1.02);
-    }
-
-    .card h3 {
-      font-size: 18px;
-      margin-bottom: 10px;
-      color: #94a3b8;
-    }
-
-    .card p {
-      font-size: 24px;
-      font-weight: bold;
-      color: #38bdf8;
-    }
-
-    @media (max-width: 768px) {
-      body {
-        flex-direction: column;
-      }
-      .sidebar {
-        width: 100%;
-        flex-direction: row;
-        overflow-x: auto;
-      }
-      .sidebar a {
-        flex: 1;
-        text-align: center;
-        padding: 10px;
-        font-size: 14px;
-      }
-    }
+    h1 { font-size: 24px; }
+    button { padding: 10px 20px; background: #0ea5e9; border: none; color: white; cursor: pointer; border-radius: 6px; }
+    input { padding: 10px; width: 100%; margin: 8px 0; border-radius: 6px; border: none; }
+    .event-form, .event-table { background: #1e293b; padding: 20px; border-radius: 12px; margin-bottom: 30px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    th, td { text-align: left; padding: 10px; border-bottom: 1px solid #334155; }
+    .actions button { margin-right: 6px; background: #22c55e; }
+    .delete-btn { background: #ef4444; }
+    .logout { background: #f59e0b; }
   </style>
 </head>
 <body>
 
-  <div class="sidebar">
-    <h2>Admin Panel</h2>
-    <a href="#" class="active">Dashboard</a>
-    <a href="#">Contestants</a>
-    <a href="#">Votes</a>
-    <a href="#">Earnings</a>
-    <a href="#">Users</a>
-    <a href="#">Messages</a>
-    <a href="#">Settings</a>
-    <a href="#">Logout</a>
+  <header>
+    <h1>Admin Dashboard</h1>
+    <button class="logout" onclick="logout()">Logout</button>
+  </header>
+
+  <div class="event-form">
+    <h2>Create New Event</h2>
+    <input type="text" id="eventName" placeholder="Event Name">
+    <button onclick="createEvent()">Add Event</button>
   </div>
 
-  <div class="main">
-    <header>
-      <h1>Dashboard Overview</h1>
-      <span>Welcome, Admin</span>
-    </header>
-
-    <section class="cards">
-      <div class="card">
-        <h3>Total Votes</h3>
-        <p id="totalVotes">0</p>
-      </div>
-      <div class="card">
-        <h3>Total Earnings</h3>
-        <p id="totalEarnings">₵0.00</p>
-      </div>
-      <div class="card">
-        <h3>Registered Users</h3>
-        <p id="userCount">0</p>
-      </div>
-      <div class="card">
-        <h3>Contestants</h3>
-        <p id="contestantCount">0</p>
-      </div>
-    </section>
+  <div class="event-table">
+    <h2>All Events</h2>
+    <table id="eventsTable">
+      <thead>
+        <tr>
+          <th>Event Name</th>
+          <th>Event ID</th>
+          <th>Organizer Link</th>
+          <th>Created</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="eventsBody"></tbody>
+    </table>
   </div>
 
-  <script>
-    // Placeholder for real data
-    document.getElementById("totalVotes").textContent = "1,248";
-    document.getElementById("totalEarnings").textContent = "₵1,248.00";
-    document.getElementById("userCount").textContent = "302";
-    document.getElementById("contestantCount").textContent = "24";
+  <!-- Firebase SDK (v10 modular) -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+    import {
+      getFirestore, collection, addDoc, getDocs,
+      deleteDoc, doc, updateDoc, serverTimestamp
+    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+    const firebaseConfig = {
+  apiKey: "AIzaSyCMEyb1jdntV14bKVvoPBaApB2wi-yTz6c",
+  authDomain: "jasdy-vote.firebaseapp.com",
+  projectId: "jasdy-vote",
+  storageBucket: "jasdy-vote.firebasestorage.app",
+  messagingSenderId: "191017072761",
+  appId: "1:191017072761:web:c1b0a30d75dcbc94173ca8",
+  measurementId: "G-MELT3K9R0T"
+};
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth();
+    const db = getFirestore();
+
+    const eventsRef = collection(db, "events");
+    const eventsBody = document.getElementById("eventsBody");
+
+    onAuthStateChanged(auth, user => {
+      if (!user) {
+        window.location.href = "login.html";
+      } else {
+        loadEvents();
+      }
+    });
+
+    async function createEvent() {
+      const name = document.getElementById("eventName").value.trim();
+      if (!name) return alert("Enter event name");
+
+      const eventId = "EVT-" + Math.floor(Math.random() * 1000000);
+      const link = `${location.origin}/organizer.html?event=${eventId}`;
+
+      await addDoc(eventsRef, {
+        name,
+        eventId,
+        link,
+        createdAt: serverTimestamp()
+      });
+
+      document.getElementById("eventName").value = "";
+      loadEvents();
+    }
+
+    async function loadEvents() {
+      eventsBody.innerHTML = "";
+      const snapshot = await getDocs(eventsRef);
+      snapshot.forEach(docSnap => {
+        const e = docSnap.data();
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td>${e.name}</td>
+          <td>${e.eventId}</td>
+          <td><a href="${e.link}" style="color:#3b82f6;" target="_blank">Open</a></td>
+          <td>${e.createdAt?.toDate().toLocaleString() || "..."}</td>
+          <td class="actions">
+            <button onclick="editEvent('${docSnap.id}', '${e.name}')">Edit</button>
+            <button class="delete-btn" onclick="deleteEvent('${docSnap.id}')">Delete</button>
+          </td>
+        `;
+        eventsBody.appendChild(row);
+      });
+    }
+
+    async function deleteEvent(id) {
+      if (confirm("Delete this event?")) {
+        await deleteDoc(doc(db, "events", id));
+        loadEvents();
+      }
+    }
+
+    async function editEvent(id, currentName) {
+      const newName = prompt("Enter new event name:", currentName);
+      if (newName && newName.trim() !== "") {
+        await updateDoc(doc(db, "events", id), { name: newName.trim() });
+        loadEvents();
+      }
+    }
+
+    function logout() {
+      signOut(auth).then(() => {
+        window.location.href = "login.html";
+      });
+    }
   </script>
 
 </body>
