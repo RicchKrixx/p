@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Sign Up – JasdyVote</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    body {
+      background: #0f172a;
+      color: white;
+      font-family: Arial, sans-serif;
+      padding: 30px;
+    }
+    input, button {
+      width: 100%;
+      padding: 12px;
+      margin-top: 10px;
+      border: none;
+      border-radius: 10px;
+    }
+    button {
+      background-color: #06b6d4;
+      color: white;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <h2>👥 Register to Host an Event</h2>
+  <form id="signupForm">
+    <input type="text" id="orgName" placeholder="Your Name or Organization" required />
+    <input type="email" id="email" placeholder="Email Address" required />
+    <input type="password" id="password" placeholder="Password (min 6 characters)" required />
+    <button type="submit">Create Account</button>
+  </form>
+
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js"></script>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getAuth, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+    import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyCMEyb1jdntV14bKVvoPBaApB2wi-yTz6c",
+      authDomain: "jasdy-vote.firebaseapp.com",
+      projectId: "jasdy-vote",
+      storageBucket: "jasdy-vote.firebasestorage.app",
+      messagingSenderId: "191017072761",
+      appId: "1:191017072761:web:c1b0a30d75dcbc94173ca8",
+      measurementId: "G-MELT3K9R0T"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    const signupForm = document.getElementById("signupForm");
+
+    signupForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      const name = orgName.value.trim();
+      const email = email.value.trim();
+      const password = password.value;
+
+      if (!name || !email || !password) {
+        alert("Please fill in all fields.");
+        return;
+      }
+
+      try {
+        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+        const user = userCredential.user;
+
+        // Save extra user info to Firestore
+        await setDoc(doc(db, "users", user.uid), {
+          name,
+          email,
+          createdAt: new Date().toISOString()
+        });
+
+        alert("Account created successfully!");
+        window.location.href = "register-event.html";
+      } catch (error) {
+        alert("Error: " + error.message);
+      }
+    });
+  </script>
+</body>
+</html>
