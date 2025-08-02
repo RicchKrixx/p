@@ -2,14 +2,14 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Admin | Register Event</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Dashboard</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <style>
     body {
-      font-family: Arial, sans-serif;
       background: #0f172a;
-      color: #fff;
-      padding: 2rem;
+      color: white;
+      font-family: Arial, sans-serif;
+      padding: 20px;
     }
     h2 {
       color: cyan;
@@ -17,9 +17,9 @@
     input, button {
       padding: 10px;
       width: 100%;
-      margin-bottom: 15px;
-      border: none;
+      margin-bottom: 10px;
       border-radius: 5px;
+      border: none;
     }
     input {
       background: #1e293b;
@@ -27,34 +27,85 @@
     }
     button {
       background: cyan;
-      color: #000;
-      cursor: pointer;
+      color: black;
       font-weight: bold;
+      cursor: pointer;
     }
-    #result {
-      margin-top: 1rem;
-      background: #1e293b;
-      padding: 1rem;
-      border-radius: 5px;
+    table {
+      width: 100%;
+      margin-top: 20px;
+      border-collapse: collapse;
     }
+    th, td {
+      border: 1px solid #334155;
+      padding: 10px;
+      text-align: center;
+    }
+    th {
+      background-color: #1e293b;
+    }
+    .toggle-btn {
+      background: #0ea5e9;
+      color: #fff;
+      padding: 5px 10px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      margin-bottom: 5px;
+    }
+    .danger {
+      background: red;
+      color: white;
+    }
+    .status-upcoming { color: orange; font-weight: bold; }
+    .status-ongoing { color: lime; font-weight: bold; }
+    .status-expired { color: gray; font-weight: bold; }
   </style>
 </head>
 <body>
-  <h2>Register New Event</h2>
+  <h2>🛠️ Admin: Create New Event</h2>
   <form id="eventForm">
     <input type="text" id="eventName" placeholder="Event Name" required />
     <input type="text" id="organizer" placeholder="Organizer Name" required />
     <input type="password" id="password" placeholder="Organizer Password" required />
-    <input type="date" id="expiryDate" required />
-    <button type="submit">Register Event</button>
+    <input type="number" id="votePrice" placeholder="Vote Price (e.g., 1)" required />
+    <input type="date" id="startDate" required />
+    <input type="date" id="endDate" required />
+    <button type="submit">Create Event</button>
   </form>
 
-  <div id="result" style="display:none;"></div>
+  <h2>📋 All Events</h2>
+  <table id="eventsTable">
+    <thead>
+      <tr>
+        <th>Event ID</th>
+        <th>Name</th>
+        <th>Organizer</th>
+        <th>Start → End</th>
+        <th>Status</th>
+        <th>Votes</th>
+        <th>Amount</th>
+        <th>90% Org</th>
+        <th>10% You</th>
+        <th>Settings</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
 
-  <!-- Firebase SDK -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-    import { getFirestore, doc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+    import {
+      getFirestore,
+      collection,
+      doc,
+      setDoc,
+      deleteDoc,
+      onSnapshot,
+      updateDoc,
+      serverTimestamp
+    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
     const firebaseConfig = {
   apiKey: "AIzaSyCMEyb1jdntV14bKVvoPBaApB2wi-yTz6c",
@@ -68,44 +119,93 @@
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
+    const eventsCol = collection(db, "events");
 
     function generateEventID() {
       return 'EVT' + Math.random().toString(36).substring(2, 8).toUpperCase();
     }
 
-    const form = document.getElementById("eventForm");
-    const resultBox = document.getElementById("result");
-
-    form.addEventListener("submit", async (e) => {
+    document.getElementById("eventForm").addEventListener("submit", async (e) => {
       e.preventDefault();
-      const eventID = generateEventID();
+      const id = generateEventID();
 
       const data = {
-        eventName: document.getElementById("eventName").value.trim(),
-        organizer: document.getElementById("organizer").value.trim(),
-        password: document.getElementById("password").value.trim(),
-        expiryDate: document.getElementById("expiryDate").value,
-        createdAt: serverTimestamp(),
+        eventName: eventName.value.trim(),
+        organizer: organizer.value.trim(),
+        password: password.value.trim(),
+        votePrice: parseFloat(votePrice.value),
+        startDate: startDate.value,
+        endDate: endDate.value,
+        totalVotes: 0,
         showVoteCount: true,
         showTotalVotes: true,
-        showTotalAmount: true
+        showTotalAmount: true,
+        createdAt: serverTimestamp()
       };
 
-      try {
-        await setDoc(doc(db, "events", eventID), data);
-        resultBox.style.display = "block";
-        resultBox.innerHTML = `
-          <p><strong>✅ Event Created Successfully!</strong></p>
-          <p><strong>Event ID:</strong> ${eventID}</p>
-          <p><strong>Event Link:</strong> <a href="event.html?id=${eventID}" target="_blank">event.html?id=${eventID}</a></p>
-          <p><strong>Organizer Login:</strong> organizer.html</p>
-          <p><strong>Password:</strong> ${data.password}</p>
+      await setDoc(doc(db, "events", id), data);
+      alert(`✅ Event Created!\nEvent ID: ${id}`);
+      eventForm.reset();
+    });
+
+    const tbody = document.querySelector("#eventsTable tbody");
+
+    onSnapshot(eventsCol, (snapshot) => {
+      tbody.innerHTML = "";
+      snapshot.forEach((docSnap) => {
+        const data = docSnap.data();
+        const eventID = docSnap.id;
+
+        const amount = data.totalVotes * (data.votePrice || 0);
+        const creatorCut = (amount * 0.10).toFixed(2);
+        const organizerCut = (amount * 0.90).toFixed(2);
+
+        const now = new Date();
+        const start = new Date(data.startDate);
+        const end = new Date(data.endDate);
+        let status = "Upcoming", statusClass = "status-upcoming";
+
+        if (now >= start && now <= end) {
+          status = "Ongoing";
+          statusClass = "status-ongoing";
+        } else if (now > end) {
+          status = "Expired";
+          statusClass = "status-expired";
+        }
+
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td>${eventID}</td>
+          <td>${data.eventName}</td>
+          <td>${data.organizer}</td>
+          <td>${data.startDate} → ${data.endDate}</td>
+          <td class="${statusClass}">${status}</td>
+          <td>${data.totalVotes}</td>
+          <td>${amount.toFixed(2)}</td>
+          <td>${organizerCut}</td>
+          <td>${creatorCut}</td>
+          <td>
+            <button class="toggle-btn" data-id="${eventID}" data-key="showVoteCount">${data.showVoteCount ? 'Hide' : 'Show'} Votes</button><br/>
+            <button class="toggle-btn" data-id="${eventID}" data-key="showTotalVotes">${data.showTotalVotes ? 'Hide' : 'Show'} Totals</button><br/>
+            <button class="toggle-btn" data-id="${eventID}" data-key="showTotalAmount">${data.showTotalAmount ? 'Hide' : 'Show'} Amount</button>
+          </td>
+          <td>
+            <button onclick="navigator.clipboard.writeText('event.html?id=${eventID}')">📋 Copy Link</button><br/>
+            <button class="danger" onclick="deleteDoc(doc(db, 'events', '${eventID}'))">🗑️ Delete</button>
+          </td>
         `;
-        form.reset();
-      } catch (error) {
-        alert("❌ Failed to create event.");
-        console.error(error);
-      }
+        tbody.appendChild(row);
+      });
+
+      // Attach toggle functionality
+      document.querySelectorAll(".toggle-btn").forEach(btn => {
+        btn.onclick = async () => {
+          const id = btn.dataset.id;
+          const key = btn.dataset.key;
+          const val = btn.innerText.includes("Hide") ? false : true;
+          await updateDoc(doc(db, "events", id), { [key]: val });
+        };
+      });
     });
   </script>
 </body>
