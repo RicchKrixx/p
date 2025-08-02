@@ -1,0 +1,144 @@
+<!DOCTYPE html><html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Create Event | JasdyVote</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f4f4f4;
+    }
+    header {
+      background-color: #1e293b;
+      color: white;
+      padding: 16px;
+      text-align: center;
+    }
+    main {
+      padding: 20px;
+    }
+    .card {
+      background: white;
+      border-radius: 10px;
+      padding: 20px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      margin-bottom: 20px;
+    }
+    .card h2 {
+      font-size: 1.5rem;
+      margin-bottom: 10px;
+    }
+    label {
+      display: block;
+      margin-top: 15px;
+      font-weight: bold;
+    }
+    input, textarea, button {
+      width: 100%;
+      padding: 10px;
+      margin-top: 5px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+    }
+    button {
+      background-color: #3b82f6;
+      color: white;
+      border: none;
+      cursor: pointer;
+      font-size: 1rem;
+      margin-top: 20px;
+    }
+    button:hover {
+      background-color: #2563eb;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Create a New Event</h1>
+  </header>
+  <main>
+    <div class="card">
+      <h2>Event Details</h2>
+      <form id="eventForm">
+        <label for="eventName">Event Name</label>
+        <input type="text" id="eventName" placeholder="Enter event name" required /><label for="eventDesc">Description</label>
+    <textarea id="eventDesc" placeholder="Enter event description" required></textarea>
+
+    <label for="eventLogo">Logo Image URL</label>
+    <input type="url" id="eventLogo" placeholder="Enter logo URL" required />
+
+    <label for="startDate">Start Date</label>
+    <input type="date" id="startDate" required />
+
+    <label for="endDate">End Date</label>
+    <input type="date" id="endDate" required />
+
+    <button type="submit">Create Event</button>
+  </form>
+</div>
+
+  </main>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import {
+      getFirestore,
+      collection,
+      addDoc,
+      serverTimestamp
+    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+    import {
+      getAuth
+    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";const firebaseConfig = {
+  apiKey: "AIzaSyCMEyb1jdntV14bKVvoPBaApB2wi-yTz6c",
+  authDomain: "jasdy-vote.firebaseapp.com",
+  projectId: "jasdy-vote",
+  storageBucket: "jasdy-vote.appspot.com",
+  messagingSenderId: "191017072761",
+  appId: "1:191017072761:web:c1b0a30d75dcbc94173ca8",
+  measurementId: "G-MELT3K9R0T"
+};
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const auth = getAuth();
+
+const eventForm = document.getElementById("eventForm");
+
+eventForm.onsubmit = async (e) => {
+  e.preventDefault();
+
+  const eventName = document.getElementById("eventName").value.trim();
+  const eventDesc = document.getElementById("eventDesc").value.trim();
+  const eventLogo = document.getElementById("eventLogo").value.trim();
+  const startDate = document.getElementById("startDate").value;
+  const endDate = document.getElementById("endDate").value;
+
+  const user = auth.currentUser;
+  if (!user) {
+    alert("You need to be logged in to create an event");
+    return;
+  }
+
+  try {
+    const newEvent = await addDoc(collection(db, "events"), {
+      name: eventName,
+      description: eventDesc,
+      logoURL: eventLogo,
+      ownerId: user.uid,
+      startDate,
+      endDate,
+      totalVotes: 0,
+      createdAt: serverTimestamp()
+    });
+    alert("Event created successfully!");
+    window.location.href = "/p/dashboard/";
+  } catch (err) {
+    alert("Error creating event: " + err.message);
+  }
+};
+
+  </script>
+</body>
+</html>
