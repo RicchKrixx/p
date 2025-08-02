@@ -2,110 +2,104 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Admin Dashboard</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Admin Panel | Voting Events</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
     body {
       background: #0f172a;
       color: white;
       font-family: Arial, sans-serif;
-      padding: 20px;
+      padding: 16px;
     }
-    h2 {
-      color: cyan;
-    }
-    input, button {
-      padding: 10px;
-      width: 100%;
-      margin-bottom: 10px;
-      border-radius: 5px;
-      border: none;
-    }
-    input {
-      background: #1e293b;
-      color: white;
+    h1 {
+      text-align: center;
+      margin-bottom: 16px;
     }
     button {
-      background: cyan;
-      color: black;
-      font-weight: bold;
-      cursor: pointer;
-    }
-    table {
-      width: 100%;
-      margin-top: 20px;
-      border-collapse: collapse;
-    }
-    th, td {
-      border: 1px solid #334155;
-      padding: 10px;
-      text-align: center;
-    }
-    th {
-      background-color: #1e293b;
-    }
-    .toggle-btn {
+      padding: 10px 16px;
       background: #0ea5e9;
-      color: #fff;
-      padding: 5px 10px;
       border: none;
-      border-radius: 4px;
-      cursor: pointer;
-      margin-bottom: 5px;
-    }
-    .danger {
-      background: red;
+      border-radius: 6px;
       color: white;
+      cursor: pointer;
     }
-    .status-upcoming { color: orange; font-weight: bold; }
-    .status-ongoing { color: lime; font-weight: bold; }
-    .status-expired { color: gray; font-weight: bold; }
+    .event {
+      background: #1e293b;
+      margin: 10px 0;
+      padding: 16px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .event-info {
+      flex: 1;
+    }
+    .event-logo {
+      width: 50px;
+      height: 50px;
+      object-fit: cover;
+      border-radius: 6px;
+      margin-right: 12px;
+    }
+    .popup {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.7);
+      display: none;
+      justify-content: center;
+      align-items: center;
+    }
+    .popup-content {
+      background: #1e293b;
+      padding: 20px;
+      border-radius: 10px;
+      width: 300px;
+    }
+    input, label {
+      display: block;
+      margin: 10px 0;
+      width: 100%;
+    }
+    input[type="file"] {
+      background: white;
+      padding: 5px;
+    }
   </style>
 </head>
 <body>
-  <h2>🛠️ Admin: Create New Event</h2>
-  <form id="eventForm">
-    <input type="text" id="eventName" placeholder="Event Name" required />
-    <input type="text" id="organizer" placeholder="Organizer Name" required />
-    <input type="password" id="password" placeholder="Organizer Password" required />
-    <input type="number" id="votePrice" placeholder="Vote Price (e.g., 1)" required />
-    <input type="date" id="startDate" required />
-    <input type="date" id="endDate" required />
-    <button type="submit">Create Event</button>
-  </form>
+  <h1>Admin Panel</h1>
+  <button onclick="openPopup()">+ Create New Event</button>
 
-  <h2>📋 All Events</h2>
-  <table id="eventsTable">
-    <thead>
-      <tr>
-        <th>Event ID</th>
-        <th>Name</th>
-        <th>Organizer</th>
-        <th>Start → End</th>
-        <th>Status</th>
-        <th>Votes</th>
-        <th>Amount</th>
-        <th>90% Org</th>
-        <th>10% You</th>
-        <th>Settings</th>
-        <th>Actions</th>
-      </tr>
-    </thead>
-    <tbody></tbody>
-  </table>
+  <div id="eventList"></div>
 
+  <!-- Popup Form -->
+  <div class="popup" id="popup">
+    <div class="popup-content">
+      <h3>Create Event</h3>
+      <input type="text" id="eventName" placeholder="Event Name" />
+      <input type="email" id="organizerEmail" placeholder="Organizer Email" />
+      <label>Start Date:</label>
+      <input type="date" id="startDate" />
+      <label>End Date:</label>
+      <input type="date" id="endDate" />
+      <label>Event Logo:</label>
+      <input type="file" id="eventLogo" accept="image/*" />
+      <br />
+      <button onclick="createEvent()">Submit</button>
+      <button onclick="closePopup()">Cancel</button>
+    </div>
+  </div>
+
+  <!-- Firebase SDK -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
     import {
-      getFirestore,
-      collection,
-      doc,
-      setDoc,
-      deleteDoc,
-      onSnapshot,
-      updateDoc,
-      serverTimestamp
+      getFirestore, collection, addDoc, getDocs, deleteDoc, doc, onSnapshot
     } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+    import {
+      getStorage, ref, uploadBytes, getDownloadURL
+    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
 
     const firebaseConfig = {
   apiKey: "AIzaSyCMEyb1jdntV14bKVvoPBaApB2wi-yTz6c",
@@ -119,94 +113,78 @@
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
-    const eventsCol = collection(db, "events");
+    const storage = getStorage(app);
 
-    function generateEventID() {
-      return 'EVT' + Math.random().toString(36).substring(2, 8).toUpperCase();
+    const eventList = document.getElementById("eventList");
+
+    function openPopup() {
+      document.getElementById("popup").style.display = "flex";
     }
 
-    document.getElementById("eventForm").addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const id = generateEventID();
+    function closePopup() {
+      document.getElementById("popup").style.display = "none";
+    }
 
-      const data = {
-        eventName: eventName.value.trim(),
-        organizer: organizer.value.trim(),
-        password: password.value.trim(),
-        votePrice: parseFloat(votePrice.value),
-        startDate: startDate.value,
-        endDate: endDate.value,
-        totalVotes: 0,
-        showVoteCount: true,
-        showTotalVotes: true,
-        showTotalAmount: true,
-        createdAt: serverTimestamp()
-      };
+    async function createEvent() {
+      const name = document.getElementById("eventName").value;
+      const email = document.getElementById("organizerEmail").value;
+      const start = document.getElementById("startDate").value;
+      const end = document.getElementById("endDate").value;
+      const logoFile = document.getElementById("eventLogo").files[0];
 
-      await setDoc(doc(db, "events", id), data);
-      alert(`✅ Event Created!\nEvent ID: ${id}`);
-      eventForm.reset();
-    });
+      if (!name || !email || !start || !end || !logoFile) {
+        alert("Please fill all fields and upload logo.");
+        return;
+      }
 
-    const tbody = document.querySelector("#eventsTable tbody");
+      const logoRef = ref(storage, `event_logos/${Date.now()}_${logoFile.name}`);
+      await uploadBytes(logoRef, logoFile);
+      const logoURL = await getDownloadURL(logoRef);
 
-    onSnapshot(eventsCol, (snapshot) => {
-      tbody.innerHTML = "";
-      snapshot.forEach((docSnap) => {
-        const data = docSnap.data();
-        const eventID = docSnap.id;
-
-        const amount = data.totalVotes * (data.votePrice || 0);
-        const creatorCut = (amount * 0.10).toFixed(2);
-        const organizerCut = (amount * 0.90).toFixed(2);
-
-        const now = new Date();
-        const start = new Date(data.startDate);
-        const end = new Date(data.endDate);
-        let status = "Upcoming", statusClass = "status-upcoming";
-
-        if (now >= start && now <= end) {
-          status = "Ongoing";
-          statusClass = "status-ongoing";
-        } else if (now > end) {
-          status = "Expired";
-          statusClass = "status-expired";
-        }
-
-        const row = document.createElement("tr");
-        row.innerHTML = `
-          <td>${eventID}</td>
-          <td>${data.eventName}</td>
-          <td>${data.organizer}</td>
-          <td>${data.startDate} → ${data.endDate}</td>
-          <td class="${statusClass}">${status}</td>
-          <td>${data.totalVotes}</td>
-          <td>${amount.toFixed(2)}</td>
-          <td>${organizerCut}</td>
-          <td>${creatorCut}</td>
-          <td>
-            <button class="toggle-btn" data-id="${eventID}" data-key="showVoteCount">${data.showVoteCount ? 'Hide' : 'Show'} Votes</button><br/>
-            <button class="toggle-btn" data-id="${eventID}" data-key="showTotalVotes">${data.showTotalVotes ? 'Hide' : 'Show'} Totals</button><br/>
-            <button class="toggle-btn" data-id="${eventID}" data-key="showTotalAmount">${data.showTotalAmount ? 'Hide' : 'Show'} Amount</button>
-          </td>
-          <td>
-            <button onclick="navigator.clipboard.writeText('event.html?id=${eventID}')">📋 Copy Link</button><br/>
-            <button class="danger" onclick="deleteDoc(doc(db, 'events', '${eventID}'))">🗑️ Delete</button>
-          </td>
-        `;
-        tbody.appendChild(row);
+      const docRef = await addDoc(collection(db, "events"), {
+        name,
+        email,
+        startDate: start,
+        endDate: end,
+        logo: logoURL,
+        createdAt: Date.now(),
+        showVotes: true
       });
 
-      // Attach toggle functionality
-      document.querySelectorAll(".toggle-btn").forEach(btn => {
-        btn.onclick = async () => {
-          const id = btn.dataset.id;
-          const key = btn.dataset.key;
-          const val = btn.innerText.includes("Hide") ? false : true;
-          await updateDoc(doc(db, "events", id), { [key]: val });
-        };
+      alert("Event Created. Event ID: " + docRef.id);
+      closePopup();
+    }
+
+    async function deleteEvent(eventId) {
+      if (confirm("Are you sure you want to delete this event?")) {
+        await deleteDoc(doc(db, "events", eventId));
+        alert("Event deleted.");
+      }
+    }
+
+    function renderEvents() {
+      onSnapshot(collection(db, "events"), (snapshot) => {
+        eventList.innerHTML = "";
+        snapshot.forEach((docSnap) => {
+          const e = docSnap.data();
+          const eventEl = document.createElement("div");
+          eventEl.className = "event";
+          eventEl.innerHTML = `
+            <img src="${e.logo}" class="event-logo" />
+            <div class="event-info">
+              <b>${e.name}</b><br/>
+              Organizer: ${e.email}<br/>
+              ${e.startDate} to ${e.endDate}<br/>
+              <a href="organizer.html?eventId=${docSnap.id}" target="_blank" style="color:#0ea5e9;">Open Organizer Panel</a>
+            </div>
+            <button onclick="deleteEvent('${docSnap.id}')">Delete</button>
+          `;
+          eventList.appendChild(eventEl);
+        });
       });
-    });
+    }
+
+    renderEvents();
   </script>
 </body>
 </html>
