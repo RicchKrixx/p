@@ -1,54 +1,22 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset="UTF-8" />
-  <title>Admin | Event Creator</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <style>
-    body {
-      font-family: sans-serif;
-      background: #0f172a;
-      color: #fff;
-      padding: 20px;
-    }
-    input, button {
-      display: block;
-      margin-bottom: 15px;
-      padding: 10px;
-      width: 100%;
-      font-size: 16px;
-      border: none;
-      border-radius: 8px;
-    }
-    button {
-      background: #38bdf8;
-      color: #000;
-      font-weight: bold;
-      cursor: pointer;
-    }
-    .message {
-      margin-top: 20px;
-      font-weight: bold;
-      color: lightgreen;
-    }
-  </style>
+  <title>Admin | Create Voting Event</title>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
 </head>
-<body>
-  <h2>Create New Event</h2>
-
-  <input type="text" id="eventName" placeholder="Event Name" required />
-  <input type="date" id="startDate" required />
-  <input type="date" id="endDate" required />
+<body style="background:#0f172a; color:white; font-family:sans-serif; padding:20px;">
+  <h2>Create Voting Event</h2>
+  
+  <input id="eventName" placeholder="Event Name" /><br><br>
+  <input type="date" id="startDate" /><br><br>
+  <input type="date" id="endDate" /><br><br>
   <button onclick="createEvent()">Create Event</button>
 
-  <div class="message" id="messageBox"></div>
-
-  <!-- Firebase SDK -->
-  <script src="https://www.gstatic.com/firebasejs/10.5.2/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.5.2/firebase-database.js"></script>
+  <p id="result"></p>
 
   <script>
-    // TODO: Replace with your actual Firebase config
+    // Your Firebase Config
     const firebaseConfig = {
   apiKey: "AIzaSyCMEyb1jdntV14bKVvoPBaApB2wi-yTz6c",
   authDomain: "jasdy-vote.firebaseapp.com",
@@ -58,47 +26,44 @@
   appId: "1:191017072761:web:c1b0a30d75dcbc94173ca8",
   measurementId: "G-MELT3K9R0T"
 };
-
-    // Initialize Firebase
     firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
+    const db = firebase.firestore();
 
     function generateId(length = 6) {
       const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-      let id = "";
+      let result = "";
       for (let i = 0; i < length; i++) {
-        id += chars.charAt(Math.floor(Math.random() * chars.length));
+        result += chars.charAt(Math.floor(Math.random() * chars.length));
       }
-      return id;
+      return result;
     }
 
-    function createEvent() {
-      const name = document.getElementById("eventName").value.trim();
-      const start = document.getElementById("startDate").value;
-      const end = document.getElementById("endDate").value;
-      const messageBox = document.getElementById("messageBox");
+    async function createEvent() {
+      const name = document.getElementById("eventName").value;
+      const startDate = document.getElementById("startDate").value;
+      const endDate = document.getElementById("endDate").value;
 
-      if (!name || !start || !end) {
-        messageBox.textContent = "Please fill all fields.";
+      if (!name || !startDate || !endDate) {
+        alert("Fill in all fields");
         return;
       }
 
-      const eventId = generateId();
+      const id = generateId();
 
-      const eventData = {
-        name,
-        startDate: start,
-        endDate: end,
-        createdAt: new Date().toISOString()
-      };
-
-      db.ref("events/" + eventId).set(eventData)
-        .then(() => {
-          messageBox.innerHTML = `✅ Event created!<br>Event ID: <strong>${eventId}</strong>`;
-        })
-        .catch((error) => {
-          messageBox.textContent = "❌ Failed to create event: " + error.message;
+      try {
+        await db.collection("events").doc(id).set({
+          id,
+          name,
+          startDate,
+          endDate,
+          createdAt: new Date().toISOString()
         });
+
+        document.getElementById("result").innerText = `Event Created! ID: ${id}`;
+      } catch (e) {
+        console.error(e);
+        alert("Failed to create event");
+      }
     }
   </script>
 </body>
