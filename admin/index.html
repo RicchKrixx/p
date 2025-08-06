@@ -9,37 +9,37 @@
     <h1>Testing Firebase Connection</h1>
     <button id="testBtn">Write Test Data</button>
 
-    <script type="module">
-      import { initializeApp } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js";
-      import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
+  <script type="module">
+  // Firebase SDKs
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js";
+  import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-database.js";
 
-      const firebaseConfig = {
-        apiKey: "AIzaSyCMEyb1jdntV14bKVvoPBaApB2wi-yTz6c",
-        authDomain: "jasdy-vote.firebaseapp.com",
-        projectId: "jasdy-vote",
-        storageBucket: "jasdy-vote.appspot.com", // ✅ FIXED HERE
-        messagingSenderId: "191017072761",
-        appId: "1:191017072761:web:7fd0e09e17d56720173ca8",
-        measurementId: "G-2T4269WGPL"
-      };
+  // Firebase config
+  const firebaseConfig = {
+    apiKey: "AIzaSyCMEyb1jdntV14bKVvoPBaApB2wi-yTz6c",
+    authDomain: "jasdy-vote.firebaseapp.com",
+    projectId: "jasdy-vote",
+    storageBucket: "jasdy-vote.appspot.com",
+    messagingSenderId: "191017072761",
+    appId: "1:191017072761:web:7fd0e09e17d56720173ca8"
+  };
 
-      // Initialize Firebase
-      const app = initializeApp(firebaseConfig);
-      const db = getFirestore(app);
+  // Initialize Firebase
+  const app = initializeApp(firebaseConfig);
+  const database = getDatabase(app);
 
-      // Button click to write test data
-      document.getElementById('testBtn').addEventListener('click', async () => {
-        try {
-          await setDoc(doc(db, "TestCollection", "TestDoc"), {
-            message: "Firebase is working!",
-            timestamp: new Date().toISOString()
-          });
-          alert("Data written successfully!");
-        } catch (e) {
-          console.error("Error writing document: ", e);
-          alert("Failed to write data.");
-        }
-      });
-    </script>
+  // Example: Save test data
+  function writeTestData() {
+    set(ref(database, 'test/'), {
+      message: "Firebase is working!"
+    }).then(() => {
+      alert("Data saved successfully!");
+    }).catch((error) => {
+      alert("Error saving data: " + error);
+    });
+  }
+
+  writeTestData(); // Call function
+</script>
   </body>
 </html>
