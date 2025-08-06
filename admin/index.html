@@ -2,50 +2,53 @@
 <html>
 <head>
   <meta charset="UTF-8" />
-  <title>Admin Dashboard - Event Voting</title>
+  <title>Admin | Event Creator</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
     body {
-      background: #0f172a;
-      color: white;
       font-family: sans-serif;
+      background: #0f172a;
+      color: #fff;
       padding: 20px;
     }
     input, button {
       display: block;
-      width: 100%;
-      margin: 10px 0;
+      margin-bottom: 15px;
       padding: 10px;
-      border-radius: 8px;
-      border: none;
+      width: 100%;
       font-size: 16px;
+      border: none;
+      border-radius: 8px;
     }
     button {
-      background-color: #00bcd4;
-      color: white;
+      background: #38bdf8;
+      color: #000;
       font-weight: bold;
       cursor: pointer;
     }
-    #message {
-      margin-top: 10px;
+    .message {
+      margin-top: 20px;
+      font-weight: bold;
       color: lightgreen;
     }
   </style>
 </head>
 <body>
   <h2>Create New Event</h2>
-  <input type="text" id="eventTitle" placeholder="Event Title" />
-  <input type="date" id="startDate" />
-  <input type="date" id="endDate" />
-  <button onclick="createEvent()">Create Event</button>
-  <div id="message"></div>
 
-  <!-- Firebase -->
-  <script src="https://www.gstatic.com/firebasejs/10.5.0/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.5.0/firebase-firestore.js"></script>
+  <input type="text" id="eventName" placeholder="Event Name" required />
+  <input type="date" id="startDate" required />
+  <input type="date" id="endDate" required />
+  <button onclick="createEvent()">Create Event</button>
+
+  <div class="message" id="messageBox"></div>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/10.5.2/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.5.2/firebase-database.js"></script>
 
   <script>
-    // Step 1: Initialize Firebase
+    // TODO: Replace with your actual Firebase config
     const firebaseConfig = {
   apiKey: "AIzaSyCMEyb1jdntV14bKVvoPBaApB2wi-yTz6c",
   authDomain: "jasdy-vote.firebaseapp.com",
@@ -55,40 +58,47 @@
   appId: "1:191017072761:web:c1b0a30d75dcbc94173ca8",
   measurementId: "G-MELT3K9R0T"
 };
-    const app = firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
 
-    // Step 2: Create Event Logic
-    async function createEvent() {
-      const title = document.getElementById("eventTitle").value.trim();
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    function generateId(length = 6) {
+      const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+      let id = "";
+      for (let i = 0; i < length; i++) {
+        id += chars.charAt(Math.floor(Math.random() * chars.length));
+      }
+      return id;
+    }
+
+    function createEvent() {
+      const name = document.getElementById("eventName").value.trim();
       const start = document.getElementById("startDate").value;
       const end = document.getElementById("endDate").value;
-      const message = document.getElementById("message");
+      const messageBox = document.getElementById("messageBox");
 
-      if (!title || !start || !end) {
-        message.innerText = "Please fill all fields.";
+      if (!name || !start || !end) {
+        messageBox.textContent = "Please fill all fields.";
         return;
       }
 
-      if (new Date(start) > new Date(end)) {
-        message.innerText = "Start date cannot be after end date.";
-        return;
-      }
+      const eventId = generateId();
 
-      const eventId = "EVT" + Date.now().toString().slice(-6);
+      const eventData = {
+        name,
+        startDate: start,
+        endDate: end,
+        createdAt: new Date().toISOString()
+      };
 
-      try {
-        await db.collection("events").doc(eventId).set({
-          id: eventId,
-          title: title,
-          startDate: start,
-          endDate: end,
-          createdAt: new Date().toISOString()
+      db.ref("events/" + eventId).set(eventData)
+        .then(() => {
+          messageBox.innerHTML = `✅ Event created!<br>Event ID: <strong>${eventId}</strong>`;
+        })
+        .catch((error) => {
+          messageBox.textContent = "❌ Failed to create event: " + error.message;
         });
-        message.innerText = `Event created with ID: ${eventId}`;
-      } catch (err) {
-        message.innerText = "Error creating event: " + err.message;
-      }
     }
   </script>
 </body>
