@@ -1,22 +1,18 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Admin | Create Voting Event</title>
-  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+  <title>Firebase Test</title>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 </head>
-<body style="background:#0f172a; color:white; font-family:sans-serif; padding:20px;">
-  <h2>Create Voting Event</h2>
-  
-  <input id="eventName" placeholder="Event Name" /><br><br>
-  <input type="date" id="startDate" /><br><br>
-  <input type="date" id="endDate" /><br><br>
-  <button onclick="createEvent()">Create Event</button>
-
-  <p id="result"></p>
+<body style="background:#111;color:#0f0;font-family:sans-serif;padding:20px;">
+  <h1>Firebase Firestore Test</h1>
+  <button onclick="writeTest()">Write to Firebase</button>
+  <button onclick="readTest()">Read from Firebase</button>
+  <p id="output">Waiting...</p>
 
   <script>
-    // Your Firebase Config
+    // ✅ Your Firebase Config
     const firebaseConfig = {
   apiKey: "AIzaSyCMEyb1jdntV14bKVvoPBaApB2wi-yTz6c",
   authDomain: "jasdy-vote.firebaseapp.com",
@@ -26,44 +22,34 @@
   appId: "1:191017072761:web:c1b0a30d75dcbc94173ca8",
   measurementId: "G-MELT3K9R0T"
 };
+
+    // ✅ Initialize Firebase
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
 
-    function generateId(length = 6) {
-      const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-      let result = "";
-      for (let i = 0; i < length; i++) {
-        result += chars.charAt(Math.floor(Math.random() * chars.length));
-      }
-      return result;
+    // ✅ Write test
+    function writeTest() {
+      db.collection("test").doc("sample").set({
+        message: "Hello from Firebase!",
+        timestamp: new Date()
+      }).then(() => {
+        document.getElementById("output").innerText = "✔️ Data written!";
+      }).catch((error) => {
+        document.getElementById("output").innerText = "❌ Write error: " + error;
+      });
     }
 
-    async function createEvent() {
-      const name = document.getElementById("eventName").value;
-      const startDate = document.getElementById("startDate").value;
-      const endDate = document.getElementById("endDate").value;
-
-      if (!name || !startDate || !endDate) {
-        alert("Fill in all fields");
-        return;
-      }
-
-      const id = generateId();
-
-      try {
-        await db.collection("events").doc(id).set({
-          id,
-          name,
-          startDate,
-          endDate,
-          createdAt: new Date().toISOString()
-        });
-
-        document.getElementById("result").innerText = `Event Created! ID: ${id}`;
-      } catch (e) {
-        console.error(e);
-        alert("Failed to create event");
-      }
+    // ✅ Read test
+    function readTest() {
+      db.collection("test").doc("sample").get().then((doc) => {
+        if (doc.exists) {
+          document.getElementById("output").innerText = "📄 Data: " + JSON.stringify(doc.data());
+        } else {
+          document.getElementById("output").innerText = "❌ No document found!";
+        }
+      }).catch((error) => {
+        document.getElementById("output").innerText = "❌ Read error: " + error;
+      });
     }
   </script>
 </body>
