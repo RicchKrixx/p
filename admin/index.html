@@ -1,55 +1,45 @@
 <!DOCTYPE html>
 <html>
-<head>
-  <title>Firebase Test</title>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-</head>
-<body style="background:#111;color:#0f0;font-family:sans-serif;padding:20px;">
-  <h1>Firebase Firestore Test</h1>
-  <button onclick="writeTest()">Write to Firebase</button>
-  <button onclick="readTest()">Read from Firebase</button>
-  <p id="output">Waiting...</p>
+  <head>
+    <title>Firebase Test</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  </head>
+  <body>
+    <h1>Testing Firebase Connection</h1>
+    <button id="testBtn">Write Test Data</button>
 
-  <script>
-    // ✅ Your Firebase Config
-    const firebaseConfig = {
-  apiKey: "AIzaSyCMEyb1jdntV14bKVvoPBaApB2wi-yTz6c",
-  authDomain: "jasdy-vote.firebaseapp.com",
-  projectId: "jasdy-vote",
-  storageBucket: "jasdy-vote.firebasestorage.app",
-  messagingSenderId: "191017072761",
-  appId: "1:191017072761:web:f9ed920068a626ac173ca8",
-  measurementId: "G-TYBZ28M4D0"
-};
-    // ✅ Initialize Firebase
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
+    <script type="module">
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js";
+      import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
 
-    // ✅ Write test
-    function writeTest() {
-      db.collection("test").doc("sample").set({
-        message: "Hello from Firebase!",
-        timestamp: new Date()
-      }).then(() => {
-        document.getElementById("output").innerText = "✔️ Data written!";
-      }).catch((error) => {
-        document.getElementById("output").innerText = "❌ Write error: " + error;
-      });
-    }
+      const firebaseConfig = {
+        apiKey: "AIzaSyCMEyb1jdntV14bKVvoPBaApB2wi-yTz6c",
+        authDomain: "jasdy-vote.firebaseapp.com",
+        projectId: "jasdy-vote",
+        storageBucket: "jasdy-vote.appspot.com", // ✅ FIXED HERE
+        messagingSenderId: "191017072761",
+        appId: "1:191017072761:web:7fd0e09e17d56720173ca8",
+        measurementId: "G-2T4269WGPL"
+      };
 
-    // ✅ Read test
-    function readTest() {
-      db.collection("test").doc("sample").get().then((doc) => {
-        if (doc.exists) {
-          document.getElementById("output").innerText = "📄 Data: " + JSON.stringify(doc.data());
-        } else {
-          document.getElementById("output").innerText = "❌ No document found!";
+      // Initialize Firebase
+      const app = initializeApp(firebaseConfig);
+      const db = getFirestore(app);
+
+      // Button click to write test data
+      document.getElementById('testBtn').addEventListener('click', async () => {
+        try {
+          await setDoc(doc(db, "TestCollection", "TestDoc"), {
+            message: "Firebase is working!",
+            timestamp: new Date().toISOString()
+          });
+          alert("Data written successfully!");
+        } catch (e) {
+          console.error("Error writing document: ", e);
+          alert("Failed to write data.");
         }
-      }).catch((error) => {
-        document.getElementById("output").innerText = "❌ Read error: " + error;
       });
-    }
-  </script>
-</body>
+    </script>
+  </body>
 </html>
