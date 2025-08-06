@@ -1,45 +1,98 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <title>Firebase Test</title>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  </head>
-  <body>
-    <h1>Testing Firebase Connection</h1>
-    <button id="testBtn">Write Test Data</button>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Voting Admin | Dashboard</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      font-family: sans-serif;
+      padding: 20px;
+      background: #111;
+      color: #fff;
+    }
+
+    input, button {
+      padding: 10px;
+      margin: 5px 0;
+      width: 100%;
+    }
+
+    .event-list {
+      margin-top: 20px;
+    }
+
+    .event {
+      background: #222;
+      padding: 10px;
+      border-radius: 8px;
+      margin-bottom: 10px;
+    }
+  </style>
+</head>
+<body>
+  <h2>Admin Dashboard</h2>
+
+  <input type="text" id="eventName" placeholder="Event Name">
+  <button onclick="createEvent()">Create Event</button>
+
+  <div class="event-list" id="eventList"></div>
 
   <script type="module">
-  // Firebase SDKs
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js";
-  import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-database.js";
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js";
+    import { getDatabase, ref, set, push, onValue } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-database.js";
 
-  // Firebase config
-  const firebaseConfig = {
-    apiKey: "AIzaSyCMEyb1jdntV14bKVvoPBaApB2wi-yTz6c",
-    authDomain: "jasdy-vote.firebaseapp.com",
-    projectId: "jasdy-vote",
-    storageBucket: "jasdy-vote.appspot.com",
-    messagingSenderId: "191017072761",
-    appId: "1:191017072761:web:7fd0e09e17d56720173ca8"
-  };
+    const firebaseConfig = {
+      apiKey: "AIzaSyCMEyb1jdntV14bKVvoPBaApB2wi-yTz6c",
+      authDomain: "jasdy-vote.firebaseapp.com",
+      projectId: "jasdy-vote",
+      storageBucket: "jasdy-vote.appspot.com",
+      messagingSenderId: "191017072761",
+      appId: "1:191017072761:web:7fd0e09e17d56720173ca8",
+      databaseURL: "https://jasdy-vote-default-rtdb.firebaseio.com"
+    };
 
-  // Initialize Firebase
-  const app = initializeApp(firebaseConfig);
-  const database = getDatabase(app);
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
 
-  // Example: Save test data
-  function writeTestData() {
-    set(ref(database, 'test/'), {
-      message: "Firebase is working!"
-    }).then(() => {
-      alert("Data saved successfully!");
-    }).catch((error) => {
-      alert("Error saving data: " + error);
-    });
-  }
+    function createEvent() {
+      const eventName = document.getElementById("eventName").value;
+      if (!eventName) return alert("Enter event name");
 
-  writeTestData(); // Call function
-</script>
-  </body>
+      const eventRef = push(ref(db, "events"));
+      const eventId = eventRef.key;
+
+      set(eventRef, {
+        id: eventId,
+        name: eventName,
+        createdAt: Date.now()
+      }).then(() => {
+        alert("Event created with ID: " + eventId);
+        document.getElementById("eventName").value = "";
+      });
+    }
+
+    function loadEvents() {
+      const eventRef = ref(db, "events");
+      onValue(eventRef, snapshot => {
+        const eventList = document.getElementById("eventList");
+        eventList.innerHTML = "";
+
+        snapshot.forEach(child => {
+          const event = child.val();
+          const div = document.createElement("div");
+          div.className = "event";
+          div.innerHTML = `
+            <strong>${event.name}</strong><br>
+            ID: ${event.id}<br>
+            <small>Link: vote.html?event=${event.id}</small>
+          `;
+          eventList.appendChild(div);
+        });
+      });
+    }
+
+    loadEvents();
+  </script>
+</body>
 </html>
