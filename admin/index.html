@@ -2,8 +2,10 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Voting Admin | Dashboard</title>
+  <title>Admin Dashboard</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -74,6 +76,20 @@
   </div>
 
   <script>
+    // TODO: Replace with your Firebase config
+    const firebaseConfig = {
+  apiKey: "AIzaSyCMEyb1jdntV14bKVvoPBaApB2wi-yTz6c",
+  authDomain: "jasdy-vote.firebaseapp.com",
+  projectId: "jasdy-vote",
+  storageBucket: "jasdy-vote.firebasestorage.app",
+  messagingSenderId: "191017072761",
+  appId: "1:191017072761:web:c1b0a30d75dcbc94173ca8",
+  measurementId: "G-MELT3K9R0T"
+};
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
     function generateID() {
       return 'EVT-' + Math.random().toString(36).substr(2, 6).toUpperCase();
     }
@@ -95,28 +111,31 @@
       }
 
       const id = generateID();
+
       const event = {
         id,
         name,
         desc,
         start,
         end,
-        linkOrganizer: `./organizer.html?event=${id}`,
-        linkVoting: `./vote.html?event=${id}`
+        createdAt: new Date().toISOString()
       };
 
-      let events = JSON.parse(localStorage.getItem('events') || '[]');
-      events.push(event);
-      localStorage.setItem('events', JSON.stringify(events));
-      alert('Event created successfully!');
-      loadEvents();
+      db.collection("events").doc(id).set(event)
+        .then(() => {
+          alert("Event created!");
+          loadEvents();
+        })
+        .catch(err => {
+          alert("Error creating event: " + err.message);
+        });
     }
 
     function deleteEvent(id) {
-      let events = JSON.parse(localStorage.getItem('events') || '[]');
-      events = events.filter(e => e.id !== id);
-      localStorage.setItem('events', JSON.stringify(events));
-      loadEvents();
+      db.collection("events").doc(id).delete().then(() => {
+        alert("Event deleted");
+        loadEvents();
+      });
     }
 
     function isExpired(endDate) {
@@ -128,23 +147,25 @@
       const list = document.getElementById('eventItems');
       list.innerHTML = '';
 
-      const events = JSON.parse(localStorage.getItem('events') || '[]');
-
-      events.forEach(event => {
-        const expired = isExpired(event.end);
-        const li = document.createElement('li');
-        li.innerHTML = `
-          <strong>${event.name}</strong> ${expired ? '<span class="expired">[EXPIRED]</span>' : ''}<br/>
-          ID: ${event.id}<br/>
-          ${event.desc}<br/>
-          Start: ${event.start}<br/>
-          End: ${event.end}<br/>
-          <a href="${event.linkOrganizer}" target="_blank">Organizer Page</a> |
-          <a href="${event.linkVoting}" target="_blank">Voting Page</a><br/>
-          <button onclick="deleteEvent('${event.id}')">Delete</button>
-        `;
-        list.appendChild(li);
-      });
+      db.collection("events").orderBy("createdAt", "desc").get()
+        .then(snapshot => {
+          snapshot.forEach(doc => {
+            const event = doc.data();
+            const expired = isExpired(event.end);
+            const li = document.createElement('li');
+            li.innerHTML = `
+              <strong>${event.name}</strong> ${expired ? '<span class="expired">[EXPIRED]</span>' : ''}<br/>
+              ID: ${event.id}<br/>
+              ${event.desc}<br/>
+              Start: ${event.start}<br/>
+              End: ${event.end}<br/>
+              <a href="./organizer.html?event=${event.id}" target="_blank">Organizer Page</a> |
+              <a href="./vote.html?event=${event.id}" target="_blank">Voting Page</a><br/>
+              <button onclick="deleteEvent('${event.id}')">Delete</button>
+            `;
+            list.appendChild(li);
+          });
+        });
     }
 
     window.onload = loadEvents;
